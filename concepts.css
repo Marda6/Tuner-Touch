@@ -1,0 +1,209 @@
+/* ENCY Tuner Touch — layout concepts A / B / C, low-fi (grey blocks, real touch sizes).
+   Everything is sized by the touch scale of tokens.css (--kf font, --ki icons), so 1280×1024
+   and 1920×1080 are the same layout with other sizes (spec, rule 6.13).
+   Surfaces: Core Graphite layers — scene (base) · panel (k4) · frame (k8: bars) · pop (k12). */
+
+.cx{position:relative;width:100%;height:100%;overflow:hidden;display:grid;
+  grid-template-columns:var(--t-left) minmax(0,1fr);
+  grid-template-rows:var(--t-bar) var(--t-tabs) minmax(0,1fr) var(--t-simbar);
+  grid-template-areas:"top top" "tabs tabs" "left view" "bar bar";
+  --kbd:340px;
+  background:var(--th-base);color:var(--ec-fg-80);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);
+  user-select:none;-webkit-user-select:none;}
+.cx[data-c="C"]{grid-template-rows:var(--t-bar) minmax(0,1fr) var(--t-simbar);grid-template-areas:"top top" "left view" "bar bar";}
+/* editing: the Windows keyboard takes the bottom (≈340 px, it is Windows' own size), the window
+   lifts everything above it; the simulation bar is under the keyboard — simulation is off anyway */
+.cx[data-s="edit"]{grid-template-rows:var(--t-bar) var(--t-tabs) minmax(0,1fr) var(--kbd);}
+.cx[data-s="edit"][data-c="C"]{grid-template-rows:var(--t-bar) minmax(0,1fr) var(--kbd);}
+
+.sp{flex:1 1 auto;min-width:0;}
+.vdiv{width:1px;align-self:stretch;margin:calc(10px * var(--ki)) 0;background:var(--ec-fg-12);flex:0 0 1px;}
+.ic{width:var(--t-glyph);height:var(--t-glyph);flex:0 0 auto;display:block;}
+
+/* ===== Buttons (touch variant of Core Button_24) =====
+   No borders: a fill tells a button, the stronger fill tells pressed / on. One primary per zone —
+   green fill with the dark ink; "on" (a latched toggle, a selected segment) — green tint + edge. */
+.b{height:var(--t-btn);min-width:var(--t-btn);padding:0 calc(14px * var(--ki));display:inline-flex;align-items:center;justify-content:center;
+  gap:calc(8px * var(--ki));flex:0 0 auto;border-radius:var(--ec-radius-md);background:var(--ec-fg-8);color:var(--ec-fg-80);
+  font:400 var(--t-fs)/var(--t-lh) var(--ec-font);white-space:nowrap;}
+.b:active{background:var(--ec-fg-16);color:var(--ec-fg-100);}
+.b.ghost{background:transparent;}
+.b.ghost:active{background:var(--ec-fg-12);}
+.b.sq{padding:0;width:var(--t-btn);}
+.b.trail{flex-direction:row-reverse;padding-right:calc(10px * var(--ki));min-width:0;flex:0 1 auto;}   /* label, then ▾ — a button that opens a menu */
+.b.trail span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.b.pri{background:var(--ec-green);color:var(--th-on-green);font-weight:600;}
+.b.pri:active{background:var(--th-green-hover);}
+.b.on{background:var(--ec-green-16);color:var(--ec-fg-100);box-shadow:inset 0 0 0 1px var(--ec-green);}
+.b.warn{background:var(--tpe-danger-bg);color:var(--th-red-text);}
+.b.dis{opacity:.32;pointer-events:none;}
+.b.split-l{border-radius:var(--ec-radius-md) 2px 2px var(--ec-radius-md);}
+.b.split-r{border-radius:2px var(--ec-radius-md) var(--ec-radius-md) 2px;padding:0;width:calc(var(--t-btn) * .8);min-width:var(--t-min);}
+.split{display:flex;gap:2px;}
+/* icon over a caption — bars with many buttons (simulation, 3D view); caption 15 px (rule 6.9) */
+.b.st{flex-direction:column;gap:calc(2px * var(--ki));height:var(--t-sim-btn);min-width:var(--t-sim-btn);padding:0 calc(10px * var(--ki));
+  font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+.b.vb{flex-direction:column;gap:calc(2px * var(--ki));height:var(--t-view-btn);min-width:var(--t-view-btn);padding:0 calc(8px * var(--ki));
+  font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+
+/* a group of choices: separate targets 8 px apart (rule 6.1) on one quiet tray */
+.grp{display:flex;gap:var(--t-gap);padding:4px;border-radius:calc(var(--ec-radius-md) + 4px);background:var(--ec-fg-4);flex:0 0 auto;}
+.grp > .b{background:transparent;}
+.grp > .b.on{background:var(--ec-fg-16);box-shadow:none;color:var(--ec-fg-100);font-weight:600;}
+
+/* ===== Top bar ===== */
+.cx-top{grid-area:top;display:flex;align-items:center;gap:var(--t-gap);padding:0 12px;min-width:0;
+  background:var(--th-frame);border-bottom:1px solid var(--ec-fg-12);}
+.title{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:0 calc(6px * var(--ki));}
+.title b{color:var(--ec-fg-100);font:600 var(--t-fs-title)/var(--t-lh-title) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.title span{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* the state + its action as one unit: what the program is now, and what to do about it */
+/* the button keeps its full 44 — the tray is exactly as high and only tints behind the words */
+.state{display:flex;align-items:center;gap:calc(12px * var(--ki));height:var(--t-btn);padding-left:calc(14px * var(--ki));border-radius:var(--ec-radius-md);
+  background:var(--ec-fg-4);flex:0 0 auto;}
+.state > span{display:flex;align-items:center;gap:8px;color:var(--ec-fg-72);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;}
+.state > span::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ec-fg-48);}
+.state.amber{background:var(--ec-amber-12);}
+.state.amber > span{color:var(--ec-amber);}
+.state.amber > span::before{background:var(--ec-amber);}
+
+/* ===== Project tabs ===== */
+.cx-tabs{grid-area:tabs;display:flex;align-items:flex-end;gap:2px;padding:0 12px;min-width:0;background:var(--th-base);border-bottom:1px solid var(--ec-fg-12);}
+/* row tabs (A, B): Chrome-like — the current one is the panel's own surface, joined to it,
+   with a green edge; the rest are plain text with dividers */
+.tab{position:relative;height:calc(var(--t-tabs) - 4px);display:flex;align-items:center;gap:calc(6px * var(--kf));padding-left:calc(16px * var(--ki));
+  min-width:0;max-width:calc(280px * var(--kf));flex:0 1 auto;margin-bottom:-1px;border-radius:var(--ec-radius-md) var(--ec-radius-md) 0 0;
+  color:var(--ec-fg-64);}
+.tab:active{background:var(--ec-fg-6);}
+.tab + .tab::before{content:"";position:absolute;left:-2px;top:12px;bottom:12px;width:1px;background:var(--ec-fg-12);}
+.tab.cur{background:var(--th-panel);color:var(--ec-fg-100);font-weight:600;box-shadow:inset 0 2px 0 var(--ec-green);}
+.tab.cur::before,.tab.cur + .tab::before{display:none;}
+.tab-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.tab-s{color:var(--ec-amber);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.tab-d{width:8px;height:8px;border-radius:50%;background:var(--ec-amber);flex:0 0 8px;}
+.tab-x{width:var(--t-min);height:var(--t-min);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--ec-fg-56);border-radius:var(--ec-radius-md);}
+.tab-x .ic{width:calc(16px * var(--ki));height:calc(16px * var(--ki));}
+.tab-add{align-self:center;margin-left:8px;}
+/* bar tabs (C): Core header tabs — pills in the top bar, current one filled */
+.cx-top .tab{height:var(--t-btn);margin:0;border-radius:var(--ec-radius-md);background:var(--ec-fg-4);box-shadow:none;}
+.cx-top .tab.cur{background:var(--ec-fg-16);}
+.cx-top .tab + .tab::before{display:none;}
+.tabs-in{display:flex;gap:var(--t-gap);min-width:0;flex:0 1 auto;}
+
+/* ===== Left panel: the program ===== */
+.cx-left{grid-area:left;display:flex;flex-direction:column;min-height:0;min-width:0;background:var(--th-panel);border-right:1px solid var(--ec-fg-12);}
+.ph{flex:0 0 auto;height:var(--t-bar);display:flex;align-items:center;gap:var(--t-gap);padding:0 12px;border-bottom:1px solid var(--ec-fg-8);}
+.ph-info{flex:0 0 auto;padding:calc(8px * var(--kf)) 12px 0;color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ph-file{flex:1 1 auto;min-width:0;color:var(--ec-fg-64);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ph-file b{display:block;color:var(--ec-fg-96);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);overflow:hidden;text-overflow:ellipsis;}
+.ph.edit{background:var(--ec-amber-12);}
+.ph.edit .ph-file b{color:var(--ec-amber);}
+
+/* operations list: 48 px rows (font), op colour bar, name over tool, status at the right */
+.ops{position:relative;flex:0 0 auto;overflow:hidden;border-bottom:1px solid var(--ec-fg-8);}
+.op{position:relative;height:var(--t-row);display:flex;align-items:center;gap:calc(12px * var(--kf));padding:0 calc(22px * var(--kf)) 0 0;
+  border-bottom:1px solid var(--ec-fg-6);}
+.op:active{background:var(--ec-fg-6);}
+.op-c{width:calc(6px * var(--kf));align-self:stretch;background:var(--c);flex:0 0 auto;}
+.op-t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+.op-t b{color:var(--ec-fg-96);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.op-t span{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.op.sel{background:var(--ec-fg-12);}
+.op.sel .op-t b{color:var(--ec-fg-100);font-weight:600;}
+.op-s{width:calc(24px * var(--kf));height:calc(24px * var(--kf));flex:0 0 auto;}
+/* B: an operation as a section header inside the NC text */
+.op.hdr{border-top:1px solid var(--ec-fg-8);background:var(--ec-fg-4);}
+/* the current operation's header pinned over the top of the text (covers its own inline copy) */
+.pinbox{position:absolute;left:0;right:0;top:0;z-index:2;}
+.op.hdr.pinned{background:color-mix(in srgb, var(--th-ink) 10%, var(--th-panel));box-shadow:0 6px 12px rgba(0,0,0,.35);}
+.op-more{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;}
+
+/* position indicator: 10 px, its thumb draggable in a 44 px zone at the edge (rule 6.6) */
+.track{position:absolute;right:4px;top:6px;bottom:6px;width:6px;border-radius:3px;background:var(--ec-fg-6);pointer-events:none;}
+.track i{position:absolute;left:0;right:0;border-radius:3px;background:var(--ec-fg-32);}
+
+/* the NC text: monospace 16 in 32 px rows (rule 6.9), Tuner colours, marks column at the left */
+.code{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;font:400 var(--t-fs-code)/var(--t-code-row) var(--tt-mono);}
+.code-in{position:absolute;left:0;right:0;top:0;}
+.ln{height:var(--t-code-row);display:flex;align-items:center;white-space:pre;color:var(--ec-fg-80);}
+.mk{width:calc(36px * var(--kf));flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
+.mk svg{width:calc(16px * var(--kf));height:calc(16px * var(--kf));}
+.ln.cur{background:var(--ec-fg-12);box-shadow:inset 3px 0 0 var(--ec-fg-80);}
+.ln.chg{background:var(--ec-amber-12);box-shadow:inset 3px 0 0 var(--ec-amber);}
+.ln .caret{display:inline-block;width:2px;height:calc(20px * var(--kf));margin-left:1px;background:var(--ec-amber);vertical-align:middle;}
+.k-rapid{color:var(--th-red-text);} .k-feed{color:var(--st-green);} .k-arc{color:var(--th-blue-text);}
+.k-aux{color:var(--op-violet);} .k-cmt{color:var(--ec-fg-56);}
+.y-n{color:var(--ec-fg-56);} .y-num{color:var(--op-blue);} .y-w{color:var(--ec-fg-80);} .y-cmt{color:var(--ec-fg-56);}
+/* error description under the selected error line (spec sect. 7, item 5) */
+.edesc{margin:2px 14px 8px calc(36px * var(--kf));padding:calc(10px * var(--kf)) calc(12px * var(--kf));border-radius:var(--ec-radius-md);
+  background:var(--tpe-danger-bg);box-shadow:inset 0 0 0 1px rgba(255,92,94,.45);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);color:var(--ec-fg-80);}
+.edesc b{color:var(--th-red-text);font-weight:600;}
+.edesc div + div{margin-top:4px;color:var(--ec-fg-72);}
+/* page up / page down at the edge of the text, next to its position indicator */
+.pager{position:absolute;right:calc(18px * var(--ki));bottom:12px;display:flex;flex-direction:column;gap:var(--t-gap);z-index:3;}
+.pager .b{background:color-mix(in srgb, var(--pop-bg) 88%, transparent);box-shadow:0 2px 8px rgba(0,0,0,.4);}
+
+/* ===== 3D view ===== */
+.cx-view{grid-area:view;display:grid;grid-template-rows:minmax(0,1fr) var(--t-timeline);min-width:0;min-height:0;}
+.v3d{position:relative;min-height:0;overflow:hidden;background:var(--th-base);}
+.v3d > svg.scene{position:absolute;inset:0;width:100%;height:100%;}
+/* tool plates on the scene: Core glass recipe; four corners, the middle stays free */
+.ov{position:absolute;display:flex;gap:var(--t-gap);padding:4px;border-radius:calc(var(--ec-radius-md) + 4px);
+  background:color-mix(in srgb, var(--pop-bg) 60%, transparent);backdrop-filter:blur(24px) saturate(1.5);
+  box-shadow:inset 0 0 0 1px var(--ec-fg-12),0 8px 28px var(--th-shadow);}
+.ov .b{background:transparent;}
+.ov .b.on{background:var(--ec-fg-16);box-shadow:none;color:var(--ec-fg-100);}
+.ov .b.tgl.on{background:var(--ec-green-16);box-shadow:inset 0 0 0 1px var(--ec-green);}
+.ov.at-tl{left:12px;top:12px;} .ov.at-tr{right:12px;top:12px;} .ov.at-bl{left:12px;bottom:12px;} .ov.at-br{right:12px;bottom:12px;}
+.ov .sep{width:1px;margin:8px 0;background:var(--ec-fg-12);}
+.dim{position:absolute;inset:0;background:rgba(14,16,16,.62);display:flex;align-items:center;justify-content:center;
+  color:var(--ec-fg-72);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+
+/* timeline: the program by blocks, operations as coloured runs with their names, simulated part brighter;
+   no error marks (sect. 7, item 5); the thumb is a 44 px target */
+.tl{position:relative;display:flex;align-items:center;padding:0 calc(20px * var(--ki));background:var(--th-panel);border-top:1px solid var(--ec-fg-12);}
+.tl-tr{position:relative;flex:1 1 auto;height:calc(28px * var(--ki));display:flex;gap:2px;}
+.seg{position:relative;min-width:0;border-radius:4px;background:color-mix(in srgb, var(--c) 22%, var(--th-base));overflow:hidden;
+  color:var(--ec-fg-64);font:400 var(--t-fs-meta)/calc(28px * var(--ki)) var(--ec-font);padding:0 8px;white-space:nowrap;text-overflow:ellipsis;}
+.seg.done{background:color-mix(in srgb, var(--c) 55%, var(--th-base));color:var(--ec-fg-100);}
+.seg i{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb, var(--c) 55%, var(--th-base));}
+.seg span{position:relative;}
+.thumb{position:absolute;top:50%;width:var(--t-min);height:var(--t-min);margin:calc(var(--t-min) / -2) 0 0 calc(var(--t-min) / -2);
+  display:flex;align-items:center;justify-content:center;}
+.thumb::before{content:"";width:calc(30px * var(--ki));height:calc(30px * var(--ki));border-radius:50%;background:var(--ec-fg-100);
+  box-shadow:0 0 0 4px rgba(14,16,16,.6),0 2px 8px rgba(0,0,0,.5);}
+.tl.off .seg{background:var(--ec-fg-6);color:var(--ec-fg-56);}
+.tl.off .thumb{opacity:.4;}
+
+/* ===== Simulation bar / console ===== */
+.cx-bar{grid-area:bar;display:flex;align-items:center;gap:var(--t-gap-l);padding:0 12px;min-width:0;background:var(--th-frame);border-top:1px solid var(--ec-fg-12);}
+.cx-bar .grp > .b{height:calc(var(--t-sim-btn) - 8px);}
+.b.play{min-width:calc(120px * var(--ki));}
+/* error navigator: ‹ 1 / 2 › — where you are among the errors (the count itself stays in the top bar) */
+.enav{display:flex;align-items:center;gap:var(--t-gap);flex:0 0 auto;}
+.enav-c{display:flex;flex-direction:column;align-items:center;min-width:calc(64px * var(--kf));}
+.enav-c b{color:var(--th-red-text);font:600 var(--t-fs)/var(--t-lh) var(--ec-font);font-variant-numeric:tabular-nums;}
+.enav-c span{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+/* speed: short, thin, unlike the timeline (no numbers — spec sect. 3) */
+.speed{display:flex;flex-direction:column;gap:4px;flex:0 1 calc(200px * var(--ki));min-width:calc(96px * var(--ki));}
+.speed span{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+.speed-tr{position:relative;height:var(--t-min);display:flex;align-items:center;}
+.speed-tr::before{content:"";position:absolute;left:0;right:0;height:4px;border-radius:2px;background:var(--ec-fg-12);}
+.speed-tr i{position:absolute;left:0;height:4px;border-radius:2px;background:var(--ec-fg-56);}
+.speed-tr b{position:absolute;width:calc(22px * var(--ki));height:calc(22px * var(--ki));margin-left:calc(-11px * var(--ki));border-radius:50%;
+  background:var(--ec-fg-80);}
+/* C: the state of the program at the left of the console, next to its one main key */
+.cstate{display:flex;flex-direction:column;justify-content:center;min-width:0;flex:0 0 auto;max-width:calc(220px * var(--kf));}
+.cstate b{display:flex;align-items:center;gap:8px;color:var(--ec-fg-96);font:600 var(--t-fs)/var(--t-lh) var(--ec-font);white-space:nowrap;}
+.cstate b::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c, var(--ec-fg-48));flex:0 0 8px;}
+.cstate span{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cstate.amber b{color:var(--ec-amber);}
+.cstate.red b{color:var(--th-red-text);}
+
+/* ===== Windows touch keyboard (drawn roughly, it is Windows' own) ===== */
+.kbd{grid-area:bar;grid-row:-2;display:flex;flex-direction:column;gap:6px;padding:10px 8px;background:#202326;border-top:1px solid #000;}
+.kbd-r{flex:1 1 0;display:flex;gap:6px;}
+.kbd-r i{flex:1 1 0;border-radius:4px;background:#2d3135;display:flex;align-items:center;justify-content:center;color:#cfd3d6;
+  font:400 15px/1 'Segoe UI',sans-serif;font-style:normal;}
+.kbd-r i.w2{flex-grow:1.6;} .kbd-r i.w6{flex-grow:6;} .kbd-r i.ent{background:#0b5cad;color:#fff;}

@@ -1,0 +1,119 @@
+/* ENCY Tuner Touch — block 2: the program panel (concept B «Лента программы»), second pass.
+   Three layers, each with one job:
+     head (56) — context: Channel 1 | 2 | 3 · the program's file · ⋯ its menu
+     text      — the program, one scroll; operations are light section headers in it, the one on top
+                 stays pinned and only it offers the list of operations (n / N ▾)
+     foot (56) — acting on the text: page up / down · Find · Edit (where the spec puts them, by the hand)
+   Follow is on by default; a scroll by hand lets go and a "Follow" chip floats over the text.
+   Rows: operation 48 (font), block 32 (font), monospace 16 (rule 6.9). Prefix pg-. */
+
+.pg{position:absolute;inset:0;display:flex;flex-direction:column;--pg-m:calc((var(--t-bar) - var(--t-btn)) / 2);}
+
+/* ===== Head ===== */
+.pg-head,.pg-foot,.pg-tools{flex:0 0 var(--t-bar);display:flex;align-items:center;gap:var(--t-gap);padding:0 var(--pg-m);min-width:0;}
+.pg-head{border-bottom:1px solid var(--ec-fg-12);}
+.pg-foot{border-top:1px solid var(--ec-fg-12);}
+/* the text's tools sit over it: fold / unfold all · page up · page down … Find · Edit */
+.pg-tools{border-bottom:1px solid var(--ec-fg-12);}
+/* the switch's title lives inside its tray, before the numbers */
+.pg-lbl{flex:0 0 auto;align-self:center;padding:0 calc(8px * var(--ki)) 0 calc(11px * var(--ki));color:var(--ec-fg-56);
+  font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+/* the channel switch: one tray, numbers; the chosen one filled and bold. Each number is a full-height
+   column of the tray (44 high, 56 wide) — the fill is drawn inside it */
+/* 4 px between the numbers and after the title (Ruslan's call — the spec's 8 px between targets is
+   relaxed inside the switch: its numbers are wide, 52 px) */
+.pg-seg{display:flex;gap:4px;flex:0 0 auto;height:var(--t-btn);padding:0 3px;border-radius:var(--ec-radius-md);background:var(--ec-fg-6);}
+.pg-seg-b{position:relative;min-width:max(var(--t-min), calc(52px * var(--ki)));height:100%;display:flex;align-items:center;justify-content:center;
+  color:var(--ec-fg-64);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);font-variant-numeric:tabular-nums;cursor:pointer;}
+.pg-seg-b::before{content:"";position:absolute;inset:3px 0;border-radius:calc(var(--ec-radius-md) - 2px);}
+.pg-seg-b:active::before{background:var(--ec-fg-8);}
+.pg-seg-b.cur{color:var(--ec-fg-100);font-weight:600;}
+.pg-seg-b.cur::before{background:var(--ec-fg-16);}
+.pg-seg-b > span{position:relative;}
+/* a channel with errors found: a small red square in the top-right corner of its plate (the count is on
+   the console). The same offset from the top and the right edge (--o); its radius is the plate's minus the
+   offset, so the corners run concentric (plate 6 − 4 = 2) */
+.pg-seg-b.err::after{--o:4px;content:"";position:absolute;top:calc(3px + var(--o));right:var(--o);width:6px;height:6px;
+  border-radius:calc(var(--ec-radius-md) - 2px - var(--o));background:var(--th-red);}
+/* the program's file as a dropdown — a tray of the switch's height: the name, then ▾; its menu holds
+   all that replaces the program */
+.pg-dd{flex:0 1 auto;min-width:0;height:var(--t-btn);display:flex;align-items:center;gap:calc(8px * var(--ki));
+  padding:0 calc(10px * var(--ki)) 0 calc(14px * var(--ki));border-radius:var(--ec-radius-md);background:var(--ec-fg-6);
+  color:var(--ec-fg-96);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);cursor:pointer;}
+.pg-dd > span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pg-dd .tk-ic{width:calc(18px * var(--ki));height:calc(18px * var(--ki));color:var(--ec-fg-64);flex:0 0 auto;}
+.pg-dd:active{background:var(--ec-fg-12);}
+.pg-dd.open{background:var(--ec-fg-16);}
+.pg-dd.open .tk-ic{transform:rotate(180deg);}
+
+/* ===== Text ===== */
+.pg-body{position:relative;flex:1 1 auto;min-height:0;}
+.pg-text{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;
+  font:400 var(--t-fs-code)/var(--t-code-row) var(--tt-mono);padding-bottom:calc(var(--t-code-row) * 3);}
+.pg-text::-webkit-scrollbar{display:none;}
+.pg-sec{position:relative;}
+
+/* an operation as a section header of the accordion: colour bar · name · tool … status · ▾ / ▸.
+   The whole header is the target (rule 6.6): a tap folds or unfolds this operation alone. Light —
+   no fill of its own; pinned on top it gets a shadow */
+.pg-op{position:sticky;top:0;z-index:2;height:var(--t-row);display:flex;align-items:center;gap:calc(10px * var(--kf));
+  padding:0;background:var(--th-panel);border-top:1px solid var(--ec-fg-8);cursor:pointer;
+  font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+.pg-sec:last-child > .pg-op.shut{border-bottom:1px solid var(--ec-fg-8);}
+.pg-sec.shut > .pg-lines{display:none;}
+.pg-op-x{width:var(--t-min);align-self:stretch;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--ec-fg-56);}
+.pg-op-x .tk-ic{width:calc(20px * var(--ki));height:calc(20px * var(--ki));transition:transform .12s ease;}
+.pg-op.shut .pg-op-x .tk-ic{transform:rotate(-90deg);}
+.pg-op.shut .pg-op-t b{font-weight:400;color:var(--ec-fg-80);}
+.pg-op:active{background:color-mix(in srgb, var(--th-ink) 8%, var(--th-panel));}
+.pg-op.stuck{border-top-color:transparent;box-shadow:0 1px 0 var(--ec-fg-12),0 8px 14px -6px rgba(0,0,0,.55);}
+/* the operation's colour (its toolpath colour): a straight bar at the left edge, no rounding */
+.pg-op-c{width:calc(4px * var(--kf));align-self:stretch;margin:calc(10px * var(--kf)) 0;background:var(--c);flex:0 0 auto;}
+.pg-op-t{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;gap:calc(10px * var(--kf));white-space:nowrap;overflow:hidden;}
+.pg-op-t b{flex:0 1 auto;min-width:0;color:var(--ec-fg-96);font-weight:600;overflow:hidden;text-overflow:ellipsis;}
+.pg-op-t span{flex:0 1 auto;min-width:0;color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);overflow:hidden;text-overflow:ellipsis;}
+.pg-op.sel .pg-op-c{width:calc(6px * var(--kf));margin:calc(6px * var(--kf)) 0;}
+.pg-op-s{width:calc(18px * var(--kf));height:calc(18px * var(--kf));flex:0 0 auto;}
+
+/* a block: marks column (Tuner's marks) · the block number, quiet · the block in Tuner's colour */
+.pg-ln{position:relative;height:var(--t-code-row);display:flex;align-items:center;white-space:pre;color:var(--ec-fg-80);cursor:pointer;}
+.pg-ln:active{background:var(--ec-fg-6);}
+.pg-mk{width:calc(32px * var(--kf));flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
+.pg-mk .tk-spr{--g:calc(16px * var(--kf));}
+.pg-tx{min-width:0;overflow:hidden;text-overflow:ellipsis;padding-right:calc(20px * var(--ki));}
+.pg-n{color:var(--ec-fg-48);}
+/* the machine is here: a quiet band and a light bar at the left; the number brightens. An error
+   line gets no colour of its own (sect. 7) */
+.pg-ln.cur{background:var(--ec-fg-8);box-shadow:inset 3px 0 0 var(--ec-fg-96);}
+.pg-ln.cur .pg-n{color:var(--ec-fg-80);}
+/* after calculation — by what the block does (Tuner): rapid red, feed green, arc blue, spindle/aux violet */
+.k-rapid{color:var(--th-red-text);} .k-feed{color:var(--st-green);} .k-arc{color:var(--th-blue-text);} .k-aux{color:var(--op-violet);}
+.k-com{color:var(--ec-fg-56);} .k-plain{color:var(--ec-fg-80);}
+/* before calculation — Tuner's syntax colours: numbers, words, comments */
+.y-num{color:var(--op-blue);} .y-com{color:var(--ec-fg-56);}
+
+/* the error of the selected block, under it — aligned with the text, with air from its block above
+   and the next block below; a plain tinted card, no accent border */
+.pg-err{margin:calc(6px * var(--kf)) calc(14px * var(--ki)) calc(10px * var(--kf)) calc(32px * var(--kf));padding:calc(10px * var(--kf)) calc(12px * var(--kf));
+  border-radius:var(--ec-radius-md);background:var(--tpe-danger-bg);
+  font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);color:var(--ec-fg-72);white-space:normal;}
+.pg-err b{color:var(--th-red-text);font-weight:600;}
+.pg-err div{margin-top:2px;color:var(--ec-fg-80);}
+
+/* position indicator: a thin line at the very edge (3 px — Ruslan's call over the spec's 10: the text is
+   scrolled by a finger, the indicator only tells where you are); it shows up (5 px, brighter) while the
+   text moves. Its thumb is still dragged in an invisible 44 px zone (rule 6.6) */
+.pg-track{position:absolute;right:0;top:calc(var(--t-row) + 4px);bottom:4px;width:8px;z-index:3;pointer-events:none;}
+.pg-thumb{position:absolute;right:0;width:var(--t-min);min-height:var(--t-min);cursor:grab;touch-action:none;pointer-events:auto;}
+.pg-thumb::after{content:"";position:absolute;right:3px;top:0;bottom:0;width:3px;border-radius:2px;background:var(--ec-fg-24);
+  transition:width .15s ease, background-color .15s ease;}
+.pg-track.moving .pg-thumb::after,.pg-thumb:active::after,.pg-thumb.drag::after{width:5px;border-radius:3px;background:var(--ec-fg-48);}
+
+/* Follow let go: a chip over the text brings the machine back into view */
+.pg-follow{position:absolute;left:50%;bottom:calc(12px * var(--ki));z-index:4;transform:translateX(-50%);border-radius:calc(var(--t-btn) / 2);
+  background:var(--pop-bg);box-shadow:inset 0 0 0 1px var(--ec-fg-12),0 6px 20px var(--th-shadow);padding:0 calc(18px * var(--ki));}
+.pg-follow:active{background:color-mix(in srgb, var(--th-ink) 22%, var(--th-panel));}
+
+/* ===== Foot: acting on the text ===== */
+.pg-foot .tk-b,.pg-tools .tk-b{background:transparent;}
+.pg-foot .tk-b:active,.pg-tools .tk-b:active{background:var(--ec-fg-12);}

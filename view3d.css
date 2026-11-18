@@ -1,0 +1,86 @@
+/* ENCY Tuner Touch — block 4: the 3D view (spec sect. 3, rules 6.4–6.5).
+   The scene fills the view; on it (Ruslan, 2026-11-18):
+     bottom left — the view cube, as in ENCY: a tap on a face — the view from that side, a drag — orbit;
+       Home (Iso, fitted) and ↺ ↻ (a quarter turn) around it; the machine's axes in their colours
+     next to it — a row of square keys: Fit | Rotate · Pan · Zoom (what one finger does)
+     top right — visibility, a column of square keys with Tuner's icons | Verify Compare
+     bottom right — the colour key of Verify Compare
+   Keys are squares with the icon alone (Ruslan: narrow plates); the name is the key's label for the
+   reader and the desk's hover, the long-press tip comes with block 8. A toggle shows its state at rest:
+   on — a lit plate and a full icon, off — dimmed. The notifications rise above the cube. Prefix v3-. */
+
+.tt-3d{--v3-cube:min(calc(168px * var(--ki)), 208px);--v3-sq:max(var(--t-min), calc(48px * var(--ki)));--v3-m:calc(12px * var(--ki));}
+.v3{position:absolute;inset:0;--ax-x:#ff6b7d;--ax-y:var(--st-green);--ax-z:var(--th-blue-text);}
+.v3 canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;}
+.v3 canvas.drag{cursor:grabbing;}
+
+/* ===== the plates: a quiet glass over the scene ===== */
+.v3-p{position:absolute;z-index:5;display:flex;flex-direction:column;gap:2px;padding:4px;
+  border-radius:var(--ec-radius-lg);background:rgba(36,40,41,.86);box-shadow:inset 0 0 0 1px var(--ec-fg-8),0 6px 20px rgba(0,0,0,.35);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+.v3-r{top:var(--v3-m);right:var(--v3-m);}
+.v3-g{display:flex;flex-direction:column;gap:2px;}
+.v3-div{height:1px;margin:4px 8px;background:var(--ec-fg-12);flex:0 0 1px;}
+/* the row next to the cube: Fit | Rotate · Pan · Zoom — its bottom on the cube's bottom */
+.v3-tools{left:calc(var(--v3-m) + var(--v3-cube) + 12px);bottom:var(--v3-m);flex-direction:row;align-items:center;}
+.v3-tools .v3-g{flex-direction:row;}
+.v3-tools .v3-div{width:1px;height:auto;align-self:stretch;margin:8px 4px;}
+
+/* ===== a key: a square, the icon alone, 48 (never under 44) ===== */
+.v3-k{position:relative;display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:var(--v3-sq);height:var(--v3-sq);padding:0;
+  border:0;border-radius:var(--ec-radius-md);background:transparent;color:var(--ec-fg-80);cursor:pointer;}
+.v3-k:active{background:var(--ec-fg-12);}
+.v3-k .tk-ic{width:calc(22px * var(--ki));height:calc(22px * var(--ki));}
+.v3-k .tk-spr{--g:calc(22px * var(--ki));}
+/* the finger's mode — one of three: the current one lit */
+.v3-k.cur{background:var(--ec-fg-16);color:var(--ec-fg-100);}
+/* a visibility toggle: on — lit plate, full icon; off — dimmed */
+.v3-k.vis{color:var(--ec-fg-48);}
+.v3-k.vis .tk-spr{opacity:.4;}
+.v3-k.vis.on{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.v3-k.vis.on .tk-spr{opacity:1;}
+/* Verify Compare — a mode of the result's colours: on — the green latched state */
+.v3-k.vc.on{background:var(--ec-green-16);color:var(--ec-fg-100);box-shadow:inset 0 0 0 1px var(--ec-green);}
+.v3-k.more{display:none;}
+/* the visibility column taller than the view (the biggest settings) folds into one key — its tiles */
+.v3-r.c .v3-vis{display:none;}
+.v3-r.c .v3-k.more{display:flex;}
+.tk-menu.v3-vpop{width:calc(420px * var(--kf));max-width:none;}
+
+/* ===== the view cube, bottom left — no plate (as ENCY's); faces are the targets ===== */
+.v3-cube{position:absolute;left:var(--v3-m);bottom:var(--v3-m);z-index:5;width:var(--v3-cube);height:var(--v3-cube);touch-action:none;cursor:grab;}
+.v3-cube svg{position:absolute;inset:calc(18px * var(--ki));width:calc(100% - 36px * var(--ki));height:calc(100% - 36px * var(--ki));overflow:visible;}
+.vc-face{fill:rgba(245,245,245,.07);stroke:var(--ec-fg-24);stroke-width:1;stroke-linejoin:round;cursor:pointer;}
+.vc-face.lit{fill:rgba(245,245,245,.11);}
+.vc-face.top{fill:rgba(245,245,245,.15);}
+.vc-face.cur{fill:var(--ec-green-16);stroke:var(--ec-green);}
+.vc-face.press{fill:var(--ec-fg-24);}
+.vc-lbl{fill:var(--ec-fg-80);font:500 10px/10px var(--ec-font);text-anchor:middle;dominant-baseline:central;pointer-events:none;}
+.vc-ax{stroke-width:1.6;stroke-linecap:round;pointer-events:none;}
+.vc-axl{font:600 11px/11px var(--ec-font);text-anchor:middle;dominant-baseline:central;pointer-events:none;}
+.vc-ax.x,.vc-axl.x{stroke:var(--ax-x);fill:var(--ax-x);}
+.vc-ax.y,.vc-axl.y{stroke:var(--ax-y);fill:var(--ax-y);}
+.vc-ax.z,.vc-axl.z{stroke:var(--ax-z);fill:var(--ax-z);}
+.vc-axl{stroke:none !important;}
+/* Home and the quarter turns in the cube's corners — 44 targets, quiet until pressed */
+.vc-btn{position:absolute;width:var(--t-min);height:var(--t-min);display:flex;align-items:center;justify-content:center;padding:0;border:0;
+  border-radius:var(--ec-radius-md);background:transparent;color:var(--ec-fg-56);cursor:pointer;}
+.vc-btn:active{background:var(--ec-fg-12);color:var(--ec-fg-100);}
+.vc-btn .tk-ic{width:calc(18px * var(--ki));height:calc(18px * var(--ki));}
+.vc-home{left:-8px;top:-8px;}
+.vc-ccw{left:-8px;bottom:-8px;}
+.vc-cw{right:-8px;bottom:-8px;}
+.vc-cw .tk-ic{transform:scaleX(-1);}
+
+/* ===== Verify Compare colour key — bottom right, a small column ===== */
+.v3-key{position:absolute;right:var(--v3-m);bottom:var(--v3-m);z-index:5;display:none;flex-direction:column;align-items:flex-start;gap:calc(6px * var(--kf));
+  padding:calc(10px * var(--kf)) calc(14px * var(--kf));border-radius:var(--ec-radius-lg);background:rgba(36,40,41,.86);
+  box-shadow:inset 0 0 0 1px var(--ec-fg-8);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  color:var(--ec-fg-80);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;}
+.v3.vc .v3-key{display:flex;}
+.v3-key.up{bottom:calc(var(--v3-m) + var(--v3-cube) + 8px);}
+.v3-key b{font-weight:400;color:var(--ec-fg-56);}
+.v3-key span{display:flex;align-items:center;gap:8px;}
+.v3-key i{width:14px;height:14px;border-radius:3px;background:var(--c);}
+/* the notification line rises above the cube */
+.tt-3d .tk-toast{bottom:calc(var(--v3-m) + var(--v3-cube) + 8px) !important;}

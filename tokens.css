@@ -1,0 +1,77 @@
+/* ENCY Tuner Touch — ENCY Core tokens + the touch size scale.
+   Colours, accent, type family and radii: Figma file Core (5mNOE8ZjiF0VlYEhaeP4LF) and the
+   ENCY_UI prototype (Graphite theme), same set as packages/tuner/tokens.css.
+   Sizes: the spec "ТЗ: сенсорный интерфейс ENCY Tuner 3 для стойки FANUC PANEL iH Pro",
+   draft 12 (docs/touch-tz) — a deliberate touch exception to Core's 20/24px density. */
+:root{
+  /* theme: one base (the scene) + one ink every layer is mixed of */
+  --th-base:#0e1010; --th-ink:#f5f5f5;
+  --th-k4:4%; --th-k8:8%; --th-k12:12%;
+  --th-panel:color-mix(in srgb, var(--th-ink) var(--th-k4), var(--th-base));   /* panels */
+  --th-frame:color-mix(in srgb, var(--th-ink) var(--th-k8), var(--th-panel));  /* top bar, panel frames */
+  --pop-bg:color-mix(in srgb, var(--th-ink) var(--th-k12), var(--th-panel));   /* menus, dialogs */
+  --th-shadow:rgba(0,0,0,.5);
+
+  --ec-bg:var(--th-base);
+  --ec-bg-96:color-mix(in srgb, var(--th-base) 96%, transparent);
+  --ec-bg-80:color-mix(in srgb, var(--th-base) 80%, transparent);
+
+  /* foreground — Layer color (#f5f5f5 opacities); text never below 56 (contrast ≥ 4.5:1, rule 6.9) */
+  --ec-fg-100:#f5f5f5; --ec-fg-96:rgba(245,245,245,.96); --ec-fg-80:rgba(245,245,245,.80);
+  --ec-fg-72:rgba(245,245,245,.72); --ec-fg-64:rgba(245,245,245,.64); --ec-fg-56:rgba(245,245,245,.56);
+  --ec-fg-48:rgba(245,245,245,.48); --ec-fg-32:rgba(245,245,245,.32); --ec-fg-24:rgba(245,245,245,.24);
+  --ec-fg-16:rgba(245,245,245,.16); --ec-fg-12:rgba(245,245,245,.12); --ec-fg-8:rgba(245,245,245,.08);
+  --ec-fg-6:rgba(245,245,245,.06); --ec-fg-4:rgba(245,245,245,.04);
+
+  /* accents */
+  --ec-green:#00a36d; --ec-green-08:rgba(0,163,109,.08); --ec-green-16:rgba(0,163,109,.16);
+  --th-on-green:#04150e; --th-green-hover:#00b578; --st-green:#00cb9a;
+  --ec-amber:#ebc14a; --ec-amber-12:rgba(235,193,74,.12);
+  --th-red:#ff5c5e; --th-red-text:#ff8384; --tpe-danger-bg:rgba(255,112,114,.12);
+  --th-cancel:#ff8ea0; --th-blue-text:#46acff;
+  --op-yellow:#ebda84; --op-blue:#84c9eb; --op-coral:#ff7072; --op-green:#84ebb8; --op-violet:#9584eb;
+
+  /* type: Inter (falls back to Segoe UI where Inter is not installed — as on the stand);
+     the NC text is monospaced by the spec (rule 6.9) — Consolas ships with every Windows */
+  --ec-font:'Inter','Inter var',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --tt-mono:Consolas,'Roboto Mono','DejaVu Sans Mono',monospace;
+
+  --ec-radius:4px; --ec-radius-md:8px; --ec-radius-lg:12px;
+}
+
+/* ===== Touch scale =====
+   Two settings drive every size (Tuner settings → "Touch interface"): Font 14–24 px and
+   Icons 24–48 px, kept per screen resolution; defaults 16/32 at 1280×1024 and 19/38 at
+   1920×1080 (×1.2: the same millimetres on a 21.5–24" screen). device.js puts the ratios on
+   .tt as unitless --kf = font/16 and --ki = icons/32. Font → text and the height of rows in
+   lists and the NC text; icons → buttons and bars. The layout itself never changes (rule 6.13).
+   Floors from section 6: a target is ≥ 44 px (10 mm), simulation and error buttons ≥ 56,
+   ≥ 8 px between targets, interface text ≥ 15 px at the default size. */
+.tt{
+  --kf:1; --ki:1;
+  --t-min:44px;
+
+  /* type (font) */
+  --t-fs:calc(16px * var(--kf));       --t-lh:calc(20px * var(--kf));        /* buttons, tabs, list titles */
+  --t-fs-meta:calc(15px * var(--kf));  --t-lh-meta:calc(18px * var(--kf));   /* second lines, progress */
+  --t-fs-title:calc(18px * var(--kf)); --t-lh-title:calc(22px * var(--kf));  /* project name */
+  --t-fs-code:calc(16px * var(--kf));  --t-code-row:calc(32px * var(--kf));  /* NC text: 16 in 32 rows */
+
+  /* rows (font) */
+  --t-row:max(var(--t-min), calc(48px * var(--kf)));        /* operations */
+  --t-row-menu:max(var(--t-min), calc(56px * var(--kf)));   /* menus, dialogs, files */
+
+  /* buttons and bars (icons) */
+  --t-btn:max(var(--t-min), calc(44px * var(--ki)));        /* a button in a bar */
+  --t-glyph:calc(20px * var(--ki));                         /* the icon inside it */
+  --t-pill:calc(36px * var(--ki));                          /* status pills (not targets) */
+  --t-gap:max(8px, calc(8px * var(--ki)));                  /* between neighbouring targets */
+  --t-gap-l:max(12px, calc(16px * var(--ki)));              /* between groups */
+  --t-bar:max(calc(56px * var(--ki)), calc(var(--t-btn) + 12px));    /* top bar */
+  --t-tabs:max(calc(48px * var(--ki)), calc(var(--t-btn) + 4px));    /* project tabs row */
+  --t-view-btn:max(var(--t-min), calc(52px * var(--ki)));   /* view buttons on the 3D */
+  --t-sim-btn:max(56px, calc(56px * var(--ki)));            /* simulation bar buttons */
+  --t-simbar:calc(var(--t-sim-btn) + 16px);                 /* 72 at the default */
+  --t-timeline:max(56px, calc(56px * var(--ki)));           /* the scale under the 3D */
+  --t-left:calc(460px * (var(--kf) + var(--ki)) / 2);       /* left panel: 460, 552 at 1920×1080 */
+}

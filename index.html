@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ENCY Tuner Touch</title>
+<!-- Tuner's touch interface for the FANUC PANEL iH Pro, concept B «Лента программы», built block by block.
+     Spec: docs/touch-tz (draft 12); the layout concepts: concepts.html -->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="stand.css">
+<link rel="stylesheet" href="kit.css">
+<link rel="stylesheet" href="frame.css">
+<link rel="stylesheet" href="prog.css">
+<link rel="stylesheet" href="sim.css">
+<link rel="stylesheet" href="view3d.css">
+</head>
+<body>
+<!-- the stand: screen, touch settings (per resolution), language, notes -->
+<div class="dev">
+  <span class="dev-name">Tuner Touch</span>
+  <div class="dev-g"><span class="dev-l">Экран</span>
+    <button class="dev-b" data-res="1280">1280×1024</button><button class="dev-b" data-res="1920">1920×1080</button></div>
+  <span class="dev-div"></span>
+  <div class="dev-g"><span class="dev-l">Шрифт</span>
+    <button class="dev-b" data-step="font:-1">−</button><span class="dev-v" id="vFont"></span><button class="dev-b" data-step="font:1">+</button></div>
+  <div class="dev-g"><span class="dev-l">Значки</span>
+    <button class="dev-b" data-step="icons:-2">−</button><span class="dev-v" id="vIcons"></span><button class="dev-b" data-step="icons:2">+</button></div>
+  <button class="dev-b" id="resetSize">По умолчанию</button>
+  <span class="dev-div"></span>
+  <div class="dev-g"><button class="dev-b" data-lang="en">EN</button><button class="dev-b" data-lang="ru">RU</button></div>
+  <button class="dev-b" id="notesBtn">Заметки</button>
+  <span class="dev-sp"></span>
+  <a class="dev-b" href="concepts.html" style="text-decoration:none">Концепты</a>
+  <span class="dev-m" id="zoom"></span>
+</div>
+
+<div class="stage" id="stage"><div class="stage-box" id="stageBox"><div class="screen" id="screen">
+  <div class="tt" id="tt">
+    <header class="tt-top" id="ttTop"></header>
+    <nav class="tt-tabs" id="ttTabs"></nav>
+    <section class="tt-left" id="ttLeft"></section>
+    <section class="tt-view"><div class="tt-3d" id="tt3d"></div><div class="tt-tl" id="ttTl"></div></section>
+    <footer class="tt-bar" id="ttBar"></footer>
+  </div>
+</div></div></div>
+<aside class="notes" id="notes"></aside>
+
+<script src="data.js"></script>
+<script src="core.js"></script>
+<script src="ui.js"></script>
+<script src="top.js"></script>
+<script src="prog.js"></script>
+<script src="sim.js"></script>
+<script src="win.js"></script>
+<script src="stand.js"></script>
+<script type="module" src="view3d.js"></script>
+</body>
+</html>

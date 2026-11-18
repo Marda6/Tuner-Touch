@@ -1,0 +1,120 @@
+/* ENCY Tuner Touch — touch kit: Core components at touch size.
+   A deliberate touch exception to Core's density (rows 20/24): every size comes from the touch
+   scale in tokens.css (font → text and rows, icons → buttons and bars). Colours, accent, type and
+   radii are Core's (Graphite). Prefix tk-. Proposed as additions to Core — see each block.
+
+   Rules kept everywhere (spec, sect. 6):
+   · a target ≥ 44 px, ≥ 8 px between targets; simulation and error buttons ≥ 56
+   · no hover: a fill tells a button, a stronger fill tells "pressed", state is visible at rest
+   · feedback at once (≤ 0.1 s) — :active, no transitions on press
+   · text ≥ 15 px, contrast ≥ 4.5:1 (fg 56 and above on these surfaces) */
+
+/* ===== Icons =====
+   Tuner's own sprites (Supplement/GUI/SVG, copied from Tuner NB 3), drawn at --g; cell = (--r, --c),
+   1-based like BtnsDarkIconPack.ini. Glyphs Tuner has no sprite for — tk-ic, Core-style strokes. */
+.tk-spr{--g:var(--t-glyph);width:var(--g);height:var(--g);flex:0 0 auto;display:block;background-repeat:no-repeat;
+  background-size:calc(var(--nx) * var(--g)) calc(var(--ny) * var(--g));
+  background-position:calc((1 - var(--c)) * var(--g)) calc((1 - var(--r)) * var(--g));}
+.s-menu{background-image:url(assets/ency/menu-28.svg);--nx:10;--ny:7;}
+.s-status{background-image:url(assets/ency/status-16.svg);--nx:14;--ny:3;}
+.s-macros{background-image:url(assets/ency/macros-16.svg);--nx:5;--ny:2;}
+.s-add{background-image:url(assets/ency/additional-20.svg);--nx:18;--ny:4;}
+.s-view{background-image:url(assets/ency/view-20.svg);--nx:16;--ny:3;}
+.s-fn{background-image:url(assets/ency/function-28.svg);--nx:12;--ny:3;}
+.tk-ic{width:var(--t-glyph);height:var(--t-glyph);flex:0 0 auto;display:block;}
+
+/* ===== Button =====
+   Touch Button (from Core Button_24): 44 high (--t-btn), radius 8, label 16, icon 20 · 8 gap.
+   default fg-8 · pressed fg-16 · ghost: no fill until pressed · primary: green fill, dark ink —
+   one per zone · on: a latched state (green tint + 1 px green edge) · danger: red text, for the
+   one destructive choice of a question · disabled: 32 % */
+.tk-b{position:relative;height:var(--t-btn);min-width:var(--t-btn);padding:0 calc(14px * var(--ki));display:inline-flex;align-items:center;
+  justify-content:center;gap:calc(8px * var(--ki));flex:0 0 auto;border-radius:var(--ec-radius-md);background:var(--ec-fg-8);
+  color:var(--ec-fg-80);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);white-space:nowrap;cursor:pointer;}
+.tk-b:active{background:var(--ec-fg-16);color:var(--ec-fg-100);}
+.tk-b.ghost{background:transparent;}
+.tk-b.ghost:active{background:var(--ec-fg-12);}
+.tk-b.sq{padding:0;width:var(--t-btn);}
+.tk-b.pri{background:var(--ec-green);color:var(--th-on-green);font-weight:600;}
+.tk-b.pri:active{background:var(--th-green-hover);}
+.tk-b.pri .tk-spr{filter:brightness(0);opacity:.85;}
+.tk-b.on{background:var(--ec-green-16);color:var(--ec-fg-100);box-shadow:inset 0 0 0 1px var(--ec-green);}
+.tk-b.on:active{background:rgba(0,163,109,.28);}
+.tk-b.danger{background:var(--tpe-danger-bg);color:var(--th-red-text);}
+.tk-b.danger:active{background:rgba(255,112,114,.22);}
+.tk-b.big{height:var(--t-row-menu);min-width:calc(120px * var(--kf));padding:0 calc(20px * var(--kf));}
+.tk-b[disabled],.tk-b.dis{opacity:.32;pointer-events:none;}
+.tk-b > span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+/* split button: the action + its ▾ menu, 2 px apart, one shape */
+.tk-split{display:flex;gap:2px;flex:0 0 auto;}
+.tk-split > .tk-b:first-child{border-radius:var(--ec-radius-md) 2px 2px var(--ec-radius-md);}
+.tk-split > .tk-b:last-child{border-radius:2px var(--ec-radius-md) var(--ec-radius-md) 2px;padding:0;width:var(--t-min);min-width:var(--t-min);}
+.tk-split > .tk-b:last-child .tk-spr{--g:calc(16px * var(--ki));}
+.tk-split.open > .tk-b:last-child{background:var(--ec-fg-24);}
+
+/* ===== State + action =====
+   What the program is now — a plain label with a dot, left of the button that acts on it. No tray:
+   a tray around label and button reads as one toggle. Amber — needs you; calculating — amber words
+   and a thin progress bar under them; simulating / simulated — green dot. */
+.tk-state{display:flex;align-items:center;gap:calc(12px * var(--ki));flex:0 0 auto;}
+.tk-st-l{position:relative;display:flex;align-items:center;gap:8px;color:var(--ec-fg-64);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);
+  white-space:nowrap;font-variant-numeric:tabular-nums;}
+.tk-st-l::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--dot, var(--ec-fg-48));flex:0 0 8px;}
+.tk-st-l > i{position:absolute;left:16px;right:0;bottom:calc(-7px * var(--ki));height:3px;border-radius:2px;background:var(--ec-fg-12);overflow:hidden;}
+.tk-st-l > i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--p, 0%);background:var(--ec-amber);}
+.tk-state.amber .tk-st-l,.tk-state.busy .tk-st-l{color:var(--ec-amber);--dot:var(--ec-amber);}
+.tk-state.green .tk-st-l{--dot:var(--st-green);}
+
+/* ===== Badge-button (errors) — a target, so a full button; red tint, count in words ===== */
+.tk-badge{background:var(--tpe-danger-bg);color:var(--th-red-text);font-weight:600;}
+.tk-badge:active{background:rgba(255,112,114,.22);color:var(--th-red-text);}
+
+/* ===== Menu (from a button) =====
+   Overlay surface, radius 12, rows 56 (font): icon 20 · title 16 · description 15. Opens under its
+   button, right edges aligned; a tap outside closes it. Rare things live here (rule 6.12). */
+.tk-menu{position:absolute;z-index:60;min-width:calc(340px * var(--kf));max-width:calc(480px * var(--kf));padding:6px;border-radius:var(--ec-radius-lg);
+  background:var(--pop-bg);box-shadow:inset 0 0 0 1px var(--ec-fg-12),0 12px 40px var(--th-shadow);display:flex;flex-direction:column;gap:2px;}
+.tk-mi{min-height:var(--t-row-menu);display:flex;align-items:center;gap:calc(14px * var(--kf));padding:calc(6px * var(--kf)) calc(14px * var(--kf));
+  border-radius:var(--ec-radius-md);text-align:left;color:var(--ec-fg-80);cursor:pointer;}
+.tk-mi:active{background:var(--ec-fg-12);}
+.tk-mi > span{display:flex;flex-direction:column;min-width:0;}
+.tk-mi b{color:var(--ec-fg-96);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+.tk-mi small{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tk-mi[disabled]{opacity:.32;pointer-events:none;}
+/* a context menu's title: what it acts on (the operation and its tool, the block) */
+.tk-mh{padding:calc(8px * var(--kf)) calc(14px * var(--kf)) calc(4px * var(--kf));color:var(--ec-fg-56);
+  font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tk-mdiv{height:1px;margin:2px 8px;background:var(--ec-fg-8);}
+
+/* ===== Switch (on / off) — in a 56 row whose whole width is the target; the track 48 × 28, the
+   knob slides; on — green track (Core accent), off — quiet track ===== */
+.tk-sw{position:relative;width:calc(48px * var(--ki));height:calc(28px * var(--ki));flex:0 0 auto;border-radius:calc(14px * var(--ki));background:var(--ec-fg-16);}
+.tk-sw::after{content:"";position:absolute;top:calc(3px * var(--ki));left:calc(3px * var(--ki));width:calc(22px * var(--ki));height:calc(22px * var(--ki));
+  border-radius:50%;background:var(--ec-fg-80);transition:transform .14s ease;}
+.tk-sw.on{background:var(--ec-green);}
+.tk-sw.on::after{background:#fff;transform:translateX(calc(20px * var(--ki)));}
+.tk-mi .tk-sw{margin-left:auto;}
+.tk-mi > img{width:calc(24px * var(--kf));height:calc(24px * var(--kf));flex:0 0 auto;}
+
+/* ===== Question (modal) — only confirmations and questions on closing (rule 6.11) =====
+   Centred card on a scrim; title 20, text 16; buttons 56. The destructive choice stands apart on the
+   left, the safe ones on the right with the primary last (rule 6.10: not next to the frequent one). */
+.tk-scrim{position:absolute;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);}
+.tk-dlg{width:min(calc(560px * var(--kf)), calc(100% - 48px));padding:calc(24px * var(--kf));border-radius:var(--ec-radius-lg);background:var(--pop-bg);
+  box-shadow:inset 0 0 0 1px var(--ec-fg-12),0 20px 60px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:calc(10px * var(--kf));}
+.tk-dlg h3{margin:0;color:var(--ec-fg-100);font:600 calc(20px * var(--kf))/calc(26px * var(--kf)) var(--ec-font);}
+.tk-dlg p{margin:0;color:var(--ec-fg-72);font:400 var(--t-fs)/calc(22px * var(--kf)) var(--ec-font);}
+.tk-dlg-b{display:flex;gap:var(--t-gap);margin-top:calc(14px * var(--kf));}
+.tk-dlg-b .sp{flex:1 1 auto;}
+
+/* ===== Notification — a line at the bottom of the 3D view, no OK, goes by itself (spec sect. 3) ===== */
+.tk-toast{position:absolute;z-index:70;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:calc(10px * var(--kf));
+  max-width:calc(100% - 48px);min-height:var(--t-btn);padding:calc(8px * var(--kf)) calc(18px * var(--kf));border-radius:var(--ec-radius-lg);
+  background:var(--pop-bg);box-shadow:inset 0 0 0 1px var(--ec-fg-12),0 8px 28px var(--th-shadow);color:var(--ec-fg-96);
+  font:400 var(--t-fs)/var(--t-lh) var(--ec-font);pointer-events:none;animation:tk-in .16s ease-out;}
+.tk-toast::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--dot, var(--st-green));flex:0 0 8px;}
+@keyframes tk-in{from{opacity:0;transform:translate(-50%, 8px);}to{opacity:1;transform:translate(-50%, 0);}}
+
+/* ===== Divider in a bar ===== */
+.tk-vdiv{width:1px;flex:0 0 1px;align-self:stretch;margin:calc(12px * var(--ki)) calc(4px * var(--ki));background:var(--ec-fg-12);}
+.tk-sp{flex:1 1 auto;min-width:0;}

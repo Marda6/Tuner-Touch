@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ENCY Tuner Touch — layout concepts</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="stand.css">
+<link rel="stylesheet" href="concepts.css">
+</head>
+<body>
+<!-- the stand: concept, screen, moment, language, annotation numbers -->
+<div class="dev">
+  <span class="dev-name">Tuner Touch · концепты</span>
+  <div class="dev-g"><span class="dev-l">Концепт</span>
+    <button class="dev-b" data-set="c=A">A · Порядок</button>
+    <button class="dev-b" data-set="c=B">B · Лента программы</button>
+    <button class="dev-b" data-set="c=C">C · Пульт снизу</button></div>
+  <span class="dev-div"></span>
+  <div class="dev-g"><span class="dev-l">Момент</span>
+    <button class="dev-b" data-set="st=error">Ошибка</button>
+    <button class="dev-b" data-set="st=needs">Нужен расчёт</button>
+    <button class="dev-b" data-set="st=edit">Правка</button></div>
+  <span class="dev-div"></span>
+  <div class="dev-g"><span class="dev-l">Экран</span>
+    <button class="dev-b" data-set="res=1280">1280×1024</button>
+    <button class="dev-b" data-set="res=1920">1920×1080</button></div>
+  <div class="dev-g"><button class="dev-b" data-set="lang=en">EN</button><button class="dev-b" data-set="lang=ru">RU</button></div>
+  <button class="dev-b" id="annBtn">Номера</button>
+  <span class="dev-sp"></span>
+  <span class="dev-m" id="zoom"></span>
+</div>
+<div class="stage" id="stage"><div class="stage-box" id="stageBox"><div class="screen" id="screen"></div></div></div>
+<aside class="notes" id="notes"></aside>
+<script src="concepts.js"></script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+/* ENCY Tuner Touch — the screen, concept B «Лента программы».
+   One layout for every resolution (rule 6.13), by levels from the top down: the window and its
+   projects (tabs) · the current project (machine, channels, errors, save) · program | 3D over the
+   timeline · simulation console. Sizes from the touch scale only, so 1280×1024 and 1920×1080
+   differ in size, never in places. Prefix tt-.
+   Surfaces (Core Graphite): scene = base (3D) · panel k4 (program) · frame k8 (header, console). */
+
+.tt{position:relative;width:100%;height:100%;overflow:hidden;display:grid;
+  grid-template-columns:var(--t-left) minmax(0,1fr);
+  grid-template-rows:var(--t-tabs) var(--t-bar) minmax(0,1fr) var(--t-simbar);
+  grid-template-areas:"tabs tabs" "top top" "left view" "bar bar";
+  background:var(--th-base);color:var(--ec-fg-80);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);
+  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+
+/* ===== Level 2 — the current project: machine and control · Channel 1 | 2 | 3 … errors | Save ▾ · View only =====
+   Under the tabs row, the same frame surface; a hairline above, the panels below */
+.tt-top{grid-area:top;display:flex;align-items:center;gap:var(--t-gap);padding:0 calc(12px * var(--ki));min-width:0;
+  background:var(--th-frame);border-bottom:1px solid var(--ec-fg-12);}
+.tt-top > .tk-vdiv{margin-left:calc(4px * var(--ki));margin-right:calc(4px * var(--ki));}
+.tt-mach{flex:0 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:0 calc(8px * var(--ki));}
+.tt-mach b{color:var(--ec-fg-96);font:600 var(--t-fs)/var(--t-lh) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tt-mach span{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tt-grp{display:flex;align-items:center;gap:var(--t-gap);flex:0 0 auto;}
+/* sections are split by dividers (tk-vdiv), 8 px gap + 4 px margin = 12 px on each side */
+
+/* ===== Project tabs: one project — one tab, the same tabs as in Tuner (sect. 7, item 9) =====
+   Part of the header, not of a panel (a tab above the 3D can't "join" the program panel). Chips —
+   Core's project tabs at touch size: 44 high, a quiet fill, the current one stronger and bold.
+   The row is as high as the top bar (56), and a chip keeps the same margin to the row's top, bottom
+   and the window's left edge — (56 − 44) / 2 = 6. ✕ is a 44 px target; ● unsaved; while it is being
+   calculated — the percentage next to the name and the chip's border filling amber. More tabs than
+   fit — the row scrolls under a finger, the current one is always brought into view, edges fade. */
+.tt{--t-tabs:var(--t-bar);}
+/* Level 1 — the window and its projects: ← back to Tuner | tabs · Open … | — ✕ */
+.tt-tabs{grid-area:tabs;position:relative;display:flex;align-items:center;min-width:0;background:var(--th-frame);border-bottom:1px solid var(--ec-fg-6);
+  --tab-m:calc((var(--t-tabs) - var(--t-btn)) / 2);padding:0 calc(12px * var(--ki)) 0 var(--tab-m);}
+.tt-tabs > .tk-vdiv{margin-left:calc(4px * var(--ki));margin-right:calc(4px * var(--ki));}
+.tt-tabs .tt-back{margin-right:calc(2px * var(--ki));}
+/* ENCY Tuner's mark in place of the back arrow: Tuner's logo.svg (30 box, the mark ~19 of it), drawn a
+   step larger than the bar icons — the app's sign, still a 44 target (to the Tuner window) */
+.tt-logo > img{width:calc(36px * var(--ki));height:calc(36px * var(--ki));flex:0 0 auto;display:block;}
+.tt-tabs .tt-win{margin-left:calc(4px * var(--ki));}
+.tt-tabs-in{flex:0 1 auto;min-width:0;display:flex;align-items:stretch;gap:var(--t-gap);padding:0 var(--tab-m);overflow:hidden;align-self:stretch;
+  scrollbar-width:none;}
+.tt-tabs-in::-webkit-scrollbar{display:none;}
+.tt-tab{position:relative;display:flex;align-items:center;gap:calc(8px * var(--kf));padding-left:calc(16px * var(--ki));
+  /* one fixed width for every tab: room for a name, "100 %", the unsaved dot and ✕ — nothing jumps when
+     a calculation starts or a project gets changed; a longer name ends in "…" */
+  width:calc(184px * var(--kf) + var(--t-min));flex:0 0 auto;color:var(--ec-fg-64);cursor:pointer;}
+.tt-tab > *{position:relative;}
+/* the chip is drawn inside the tab, so the whole row height stays the target */
+.tt-tab::before{content:"";position:absolute;left:0;right:0;top:var(--tab-m);bottom:var(--tab-m);border-radius:var(--ec-radius-md);background:var(--ec-fg-6);}
+.tt-tab:active::before{background:var(--ec-fg-12);}
+.tt-tab.cur::before{background:var(--ec-fg-16);}
+.tt-tab.cur{color:var(--ec-fg-100);}
+/* calculating: the chip's fill takes a light amber tint up to the progress… */
+.tt-tab.calc::before{background:linear-gradient(90deg, var(--ec-amber-12) var(--p, 0%), var(--ec-fg-6) var(--p, 0%));}
+.tt-tab.cur.calc::before{background:linear-gradient(90deg, rgba(235,193,74,.2) var(--p, 0%), var(--ec-fg-16) var(--p, 0%));}
+.tt-tab.calc:active::before{background:var(--ec-fg-12);}
+/* …and its 2 px border, grey, fills amber from the left as the calculation goes */
+.tt-tab.calc::after{content:"";position:absolute;left:0;right:0;top:var(--tab-m);bottom:var(--tab-m);border-radius:var(--ec-radius-md);padding:2px;
+  background:linear-gradient(90deg, var(--ec-amber) var(--p, 0%), var(--ec-fg-16) var(--p, 0%));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);mask-composite:exclude;pointer-events:none;}
+.tt-tab-n{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tt-tab.cur .tt-tab-n{font-weight:600;}
+/* the percentage always takes the width of "100 %", right-aligned — 5 % and 100 % move nothing */
+.tt-tab-p{flex:0 0 auto;min-width:5ch;text-align:right;color:var(--ec-amber);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.tt-tab-d{width:8px;height:8px;border-radius:50%;background:var(--ec-amber);flex:0 0 8px;}
+.tt-tab-x{width:var(--t-min);align-self:stretch;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--ec-fg-56);}
+.tt-tab-x .tk-ic{width:calc(24px * var(--ki));height:calc(24px * var(--ki));padding:calc(4px * var(--ki));border-radius:var(--ec-radius);}
+.tt-tab-x:active{color:var(--ec-fg-100);}
+.tt-tab-x:active .tk-ic{background:var(--ec-fg-16);}
+.tt-tab.cur .tt-tab-x{color:var(--ec-fg-80);}
+.tt-tabs .tt-open{margin:0 var(--tab-m) 0 0;}
+/* scrolled tabs: a soft edge tells there is more */
+.tt-tabs-in.more-l{-webkit-mask-image:linear-gradient(90deg, transparent 0, #000 32px);mask-image:linear-gradient(90deg, transparent 0, #000 32px);}
+.tt-tabs-in.more-r{-webkit-mask-image:linear-gradient(270deg, transparent 0, #000 32px);mask-image:linear-gradient(270deg, transparent 0, #000 32px);}
+.tt-tabs-in.more-l.more-r{-webkit-mask-image:linear-gradient(90deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);
+  mask-image:linear-gradient(90deg, transparent 0, #000 32px, #000 calc(100% - 32px), transparent 100%);}
+
+/* ===== Zones still to build (blocks 2–5) ===== */
+.tt-left{grid-area:left;position:relative;min-height:0;background:var(--th-panel);border-right:1px solid var(--ec-fg-12);}
+.tt-view{grid-area:view;display:grid;grid-template-rows:minmax(0,1fr) var(--t-timeline);min-width:0;min-height:0;}
+.tt-3d{position:relative;min-height:0;overflow:hidden;background:var(--th-base);}
+.tt-tl{position:relative;background:var(--th-panel);border-top:1px solid var(--ec-fg-12);}
+.tt-bar{grid-area:bar;position:relative;background:var(--th-frame);border-top:1px solid var(--ec-fg-12);}
+.tt-ph{position:absolute;inset:calc(10px * var(--ki));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  border:1px dashed var(--ec-fg-12);border-radius:var(--ec-radius-md);color:var(--ec-fg-56);text-align:center;pointer-events:none;
+  font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+.tt-ph b{color:var(--ec-fg-64);font-weight:600;}
+.tt-ph i{font-style:normal;font-variant-numeric:tabular-nums;}
+.tt-tl .tt-ph,.tt-bar .tt-ph{inset:calc(6px * var(--ki)) calc(10px * var(--ki));flex-direction:row;gap:12px;}
+
+/* ===== The full-screen "Open" screen (built in block 7; here — where you land) ===== */
+.tt-screen{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;background:var(--th-base);}
+.tt-screen-top{flex:0 0 var(--t-bar);display:flex;align-items:center;gap:var(--t-gap);padding:0 calc(12px * var(--ki));background:var(--th-frame);
+  border-bottom:1px solid var(--ec-fg-12);}
+.tt-screen-top h2{margin:0 0 0 calc(8px * var(--ki));flex:1 1 auto;color:var(--ec-fg-96);font:600 var(--t-fs-title)/var(--t-lh-title) var(--ec-font);}
+.tt-screen-body{flex:1 1 auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:calc(16px * var(--kf));color:var(--ec-fg-64);
+  text-align:center;padding:24px;}
+.tt-screen-body p{margin:0;max-width:calc(560px * var(--kf));}
+
+/* ===== What lies under the touch window (stand-ins): the regular Tuner window, the Windows desktop ===== */
+.tt-under{position:absolute;inset:0;z-index:90;display:flex;flex-direction:column;font:400 12px/16px var(--ec-font);}
+.tt-under.desk{background:radial-gradient(120% 90% at 30% 20%, #1b4a6b 0%, #0b2236 55%, #06121d 100%);color:#e9eef2;}
+.tt-under-body{flex:1 1 auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px;}
+.tt-under-body h2{margin:0;color:#fff;font:600 22px/28px var(--ec-font);}
+.tt-under-body p{margin:0;max-width:620px;font:400 15px/22px var(--ec-font);opacity:.85;}
+/* Windows 10 taskbar — 40 px, Windows' own size */
+.tt-task{flex:0 0 40px;display:flex;align-items:center;background:rgba(16,20,24,.94);}
+.tt-task-start{width:48px;height:40px;display:grid;place-content:center;grid-template-columns:7px 7px;gap:1px;}
+.tt-task-start b{width:7px;height:7px;background:#fff;}
+.tt-task-app{position:relative;height:40px;padding:0 14px;display:flex;align-items:center;gap:8px;color:#fff;font:400 13px/16px 'Segoe UI',sans-serif;cursor:pointer;}
+.tt-task-app::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:2px;background:#76b9ed;}
+.tt-task-app:active{background:rgba(255,255,255,.14);}
+.tt-task-app i{width:22px;height:22px;border-radius:5px;background:var(--ec-green);display:grid;place-items:center;color:#04150e;font:700 12px/1 var(--ec-font);font-style:normal;}
+.tt-task-clock{margin-left:auto;padding:0 12px;color:#fff;font:400 12px/16px 'Segoe UI',sans-serif;text-align:center;}
+/* the regular Tuner window — desktop density; the real one is packages/tuner */
+.tt-under.tuner{background:var(--th-base);color:var(--ec-fg-72);}
+.tt-tw-top{flex:0 0 44px;display:flex;align-items:center;gap:4px;padding:6px;background:var(--th-frame);border-bottom:1px solid var(--ec-fg-12);}
+.tt-tw-b{position:relative;height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;border-radius:var(--ec-radius);color:var(--ec-fg-72);cursor:pointer;}
+.tt-tw-b:hover{background:var(--ec-fg-12);color:var(--ec-fg-96);}
+.tt-tw-tab{height:32px;padding:0 12px;display:flex;align-items:center;border-radius:var(--ec-radius);color:var(--ec-fg-64);}
+.tt-tw-tab.cur{background:var(--ec-fg-16);color:var(--ec-fg-96);}
+.tt-tw-menu{position:absolute;left:0;top:36px;z-index:2;min-width:220px;padding:2px;border-radius:var(--ec-radius);background:var(--pop-bg);
+  box-shadow:inset 0 0 0 1px var(--ec-fg-12),0 6px 20px var(--th-shadow);display:flex;flex-direction:column;}
+.tt-tw-mi{height:24px;padding:0 8px;display:flex;align-items:center;gap:8px;border-radius:3px;color:var(--ec-fg-72);white-space:nowrap;cursor:pointer;}
+.tt-tw-mi:hover{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.tt-tw-mi.hl{color:var(--ec-fg-96);}
+.tt-tw-mi.hl::after{content:"";margin-left:auto;width:6px;height:6px;border-radius:50%;background:var(--ec-badge, #00cf8a);}
+.tt-tw-mi.off{color:var(--ec-fg-32);pointer-events:none;}
+.tt-tw-body{flex:1 1 auto;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;color:var(--ec-fg-56);}
+.tt-tw-body b{color:var(--ec-fg-80);font-weight:600;}
