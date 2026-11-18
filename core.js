@@ -110,14 +110,15 @@ window.TT = (function(){
       o_verify:'Verify Compare', o_vis:'Видимость', vc_title:'Отклонение от детали', vc_rest:'Остаток', vc_ok:'В допуске', vc_gouge:'Зарез'
     }
   };
-  var lang = load('touch.lang', 'en');
+  // the stand opens in English (Ruslan, 2026-11-19); v2 — earlier saved choices no longer override it
+  var lang = load('touch.v2.lang', 'en');
   function t(k, p){
     var s = STR[lang][k];
     if (s == null) return k;
     if (typeof s === 'function') return s(p);
     return s.replace(/\{(\w+)\}/g, function(m, x){ return p && p[x] != null ? p[x] : m; });
   }
-  function setLang(l){ lang = l; keep('touch.lang', l); emit('lang', l); }
+  function setLang(l){ lang = l; keep('touch.v2.lang', l); emit('lang', l); }
 
   // ——— projects ———
   // state: needs · calculating · calculated · simulating · paused · simulated

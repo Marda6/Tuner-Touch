@@ -4,8 +4,15 @@
 // scaled down only to fit the window. The notes column: the block's decisions and demo states.
 (function(){
   'use strict';
+  // the defaults per screen, by the millimetres under a finger and the eye (spec sect. 3, rules 6.1, 6.9):
+  // 1280×1024 19" — a pixel 0.294 mm: font 16 / icons 32 → buttons 44 = 12.9 mm, console keys 56 = 16.5 mm,
+  //   text 16 (capitals ≈ 3.4 mm — comfortable at arm's length), second lines 15 — the spec's minimum;
+  // 1920×1080 21.5–24" — 0.25–0.28 mm: 19 / 38 (×1.19) → the same 12.9 mm on 21.5", 14.5 mm on 24" —
+  //   never smaller than on the 19" panel
   var RES = {'1280':{w:1280, h:1024, font:16, icons:32}, '1920':{w:1920, h:1080, font:19, icons:38}};
-  var res = TT.load('touch.res', '1280'), sizes = TT.load('touch.sizes', {}), notesOn = TT.load('touch.notes', true);
+  // notes closed and the defaults below on first open (Ruslan, 2026-11-19); v2 — earlier saved sizes and
+  // the notes switch no longer override them
+  var res = TT.load('touch.res', '1280'), sizes = TT.load('touch.v2.sizes', {}), notesOn = TT.load('touch.v2.notes', false);
   var screen = document.getElementById('screen'), box = document.getElementById('stageBox'), stage = document.getElementById('stage'),
       tt = document.getElementById('tt'), notes = document.getElementById('notes');
 
@@ -36,10 +43,10 @@
     else if (b.hasAttribute('data-lang')){ TT.setLang(b.getAttribute('data-lang')); }
     else if (b.hasAttribute('data-step')){
       var p = b.getAttribute('data-step').split(':'), s = size(), k = p[0], lim = k === 'font' ? [14, 24] : [24, 48];
-      s[k] = Math.max(lim[0], Math.min(lim[1], s[k] + +p[1])); sizes[res] = s; TT.keep('touch.sizes', sizes);
+      s[k] = Math.max(lim[0], Math.min(lim[1], s[k] + +p[1])); sizes[res] = s; TT.keep('touch.v2.sizes', sizes);
     }
-    else if (b.id === 'resetSize'){ delete sizes[res]; TT.keep('touch.sizes', sizes); }
-    else if (b.id === 'notesBtn'){ notesOn = !notesOn; TT.keep('touch.notes', notesOn); }
+    else if (b.id === 'resetSize'){ delete sizes[res]; TT.keep('touch.v2.sizes', sizes); }
+    else if (b.id === 'notesBtn'){ notesOn = !notesOn; TT.keep('touch.v2.notes', notesOn); }
     apply();
   });
   window.addEventListener('resize', function(){ fit(); TT.emit('resize'); });
