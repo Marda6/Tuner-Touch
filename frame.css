@@ -13,7 +13,7 @@
   user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 
 /* ===== Level 2 — the current project: machine and control · Channel 1 | 2 | 3 … errors | Save ▾ · View only =====
-   Under the tabs row, the same frame surface; a hairline above, the panels below */
+   Under the tabs strip, on the frame surface — a step lighter than the strip; the panels below */
 .tt-top{grid-area:top;display:flex;align-items:center;gap:var(--t-gap);padding:0 calc(12px * var(--ki));min-width:0;
   background:var(--th-frame);border-bottom:1px solid var(--ec-fg-12);}
 .tt-top > .tk-vdiv{margin-left:calc(4px * var(--ki));margin-right:calc(4px * var(--ki));}
@@ -31,8 +31,10 @@
    calculated — the percentage next to the name and the chip's border filling amber. More tabs than
    fit — the row scrolls under a finger, the current one is always brought into view, edges fade. */
 .tt{--t-tabs:var(--t-bar);}
-/* Level 1 — the window and its projects: ← back to Tuner | tabs · Open … | — ✕ */
-.tt-tabs{grid-area:tabs;position:relative;display:flex;align-items:center;min-width:0;background:var(--th-frame);border-bottom:1px solid var(--ec-fg-6);
+/* Level 1 — the window and its projects: ENCY Tuner | tabs · Open … | — ✕. The darkest strip (Core's
+   base, like a window's title bar), so it never reads as one band with the project row under it
+   (Ruslan, 2026-11-19: "the two look the same"); the chips stand on it lighter */
+.tt-tabs{grid-area:tabs;position:relative;display:flex;align-items:center;min-width:0;background:var(--th-base);border-bottom:1px solid var(--ec-fg-8);
   --tab-m:calc((var(--t-tabs) - var(--t-btn)) / 2);padding:0 calc(12px * var(--ki)) 0 var(--tab-m);}
 .tt-tabs > .tk-vdiv{margin-left:calc(4px * var(--ki));margin-right:calc(4px * var(--ki));}
 .tt-tabs .tt-back{margin-right:calc(2px * var(--ki));}
