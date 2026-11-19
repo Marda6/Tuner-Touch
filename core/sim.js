@@ -120,7 +120,9 @@
   }
 
   // ——— block by block ———
-  var blocks = [], pos = -1, timer = 0, job = null, playing = false;
+  // reach — the furthest block of this run (a step back keeps the material: the timeline shows it lighter);
+  // silent — a seek runs many blocks and shows only the last one
+  var blocks = [], pos = -1, timer = 0, job = null, playing = false, reach = -1, silent = false;
   function build(p){
     var out = [];
     p.channels.forEach(function(c){
@@ -135,6 +137,8 @@
   }
   function interval(){ return Math.round(520 * Math.pow(1 - cfg.speed / 100, 1.6) + 22); }
   function show(){
+    if (pos > reach) reach = pos;
+    if (silent) return;
     var p = proj(), bl = blocks[pos];
     window.TUNER_CODE.simLine(bl ? bl.ch : 0, bl ? bl.line : null);
     if (job) job.set(blocks.length ? (pos + 1) / blocks.length * 100 : 0);
@@ -181,7 +185,7 @@
       var ran = []; blocks.forEach(function(x){ if (ran.indexOf(x.op) < 0) ran.push(x.op); });
       report(ran, allOps(p).filter(function(x){ return x.op.status === 'none'; }).length);
     }
-    blocks = []; pos = -1;
+    blocks = []; pos = -1; reach = -1;
     window.TUNER_CODE.simLine(0, null);
     if (p) emit(p);
   }
@@ -191,7 +195,7 @@
     pause();
     blocks.forEach(function(x){ x.op.running = false; x.op.simTo = null; });
     if (job){ var j = job; job = null; j.cancel(true); }
-    blocks = []; pos = -1;
+    blocks = []; pos = -1; reach = -1;
     if (window.TUNER_CODE) window.TUNER_CODE.simLine(0, null);
     if (p && !quiet) emit(p);
   }
@@ -226,7 +230,48 @@
     caret = {ch: e.ch, line: e.line};
     // the tree and the inspector follow, as they do for the caret
     document.dispatchEvent(new CustomEvent('tuner:cursor', {detail: {channel: p.channels[e.ch], line: e.line, op: e.op}}));
+    // touch (spec sect. 3): the machine goes to the error's block too
+    if (window.TOUCH) toLine(e.ch, e.line);
   }
+
+  // ——— Tuner Touch, variant 3: the timeline and the top bar drive the same simulation ———
+  // seek(k): the machine on block k of the run — forward runs the blocks at once (no stops), back only moves
+  // the machine and the block (the material stays, as a step back in Tuner)
+  function seek(k){
+    var p = proj(); if (!p) return;
+    pause();
+    if (pos < 0 || !blocks.length){
+      blocks = build(p); pos = -1; reach = -1;
+      if (!blocks.length) return;
+      if (!job){ job = V.progress('<b>Machining simulation</b>', 0); job.onCancel = function(){ job = null; stop(); }; }
+    }
+    k = Math.max(0, Math.min(blocks.length - 1, k));
+    if (k > pos){ silent = true; while (pos < k && advance()){} silent = false; }
+    else pos = k;
+    show();
+  }
+  // the machine on a block of a channel: the last motion block at or before it
+  function toLine(ch, line){
+    var p = proj(); if (!p) return;
+    var list = pos >= 0 && blocks.length ? blocks : build(p), k = -1;
+    list.forEach(function(b, i){ if (b.ch === ch && b.line <= line) k = i; });
+    if (k < 0){ list.forEach(function(b, i){ if (k < 0 && b.ch === ch) k = i; }); }
+    if (k >= 0) seek(k);
+  }
+  window.TUNER_SIM = {
+    // the run's blocks (or the ones a run would take), where the machine is, how far the run got
+    info: function(){
+      var p = proj(); if (!p) return {blocks: [], pos: -1, reach: -1, playing: false};
+      return {blocks: pos >= 0 && blocks.length ? blocks : build(p), pos: pos, reach: reach, playing: playing, run: pos >= 0};
+    },
+    playing: function(){ return playing; },
+    busy: function(){ return !!job; },
+    seek: seek, toLine: toLine,
+    // the first error found so far (the errors badge)
+    firstError: function(){ caret = {ch: -1, line: -1}; errNav(1); },
+    // the long press on an operation: this one, or up to it
+    fast: function(scope, op){ if (op) curOp = op; fast(scope); }
+  };
 
   // ——— menus: checks and stops · parameters · more ———
   function tg(v){ return '<img class="tg" src="assets/insp/' + (v ? 'toggle-on' : 'toggle-off') + '.svg" alt="">'; }

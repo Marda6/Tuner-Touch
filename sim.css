@@ -151,17 +151,3 @@
 .sm.c4 .sm-z > .tk-vdiv{margin-left:0;margin-right:0;}
 .sm.c4 .sm-errb,.sm.c4 .tk-b.sm-errb{padding:0 calc(8px * var(--ki));}
 .sm.c4 .sm-err{margin-left:0;}
-
-/* ===== The variant from Tuner's components (spec sect. 3–4): Tuner's simulation panel in one row, in its
-   order, every key captioned; the speed to the right edge. No timeline under the 3D — Tuner has none ===== */
-.sm.sm-t{display:flex;align-items:center;column-gap:var(--t-gap);}
-.sm-t > .tk-vdiv{margin:calc(14px * var(--ki)) calc(4px * var(--ki));}
-.sm-t .sm-speed{flex:1 1 calc(160px * var(--ki));width:auto;min-width:max-content;}
-.sm-t.c2 [data-act="checks"] > span,.sm-t.c2 [data-act="reset"] > span,.sm-t.c2 [data-act="next"] > span,.sm-t.c2 [data-act="prev"] > span{display:none;}
-.sm-t.c3 [data-act="back"] > span,.sm-t.c3 [data-act="step"] > span{display:none;}
-.sm-t.c3 > .tk-vdiv{margin-left:0;margin-right:0;}
-.tt.v-tuner .tt-view{grid-template-rows:minmax(0,1fr) 0;}
-.tt.v-tuner .tt-tl{display:none;}
-/* Tuner's "Checks and Stops": switch rows of 56 */
-.tk-menu.sm-checks-w{min-width:calc(400px * var(--kf));}
-.sm-checks-w .tk-mi > img,.sm-checks-w .tk-mi > .tk-ic{width:calc(22px * var(--ki));height:calc(22px * var(--ki));flex:0 0 auto;}

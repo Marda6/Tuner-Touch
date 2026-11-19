@@ -122,9 +122,8 @@ window.TT = (function(){
   // the variant on the stand (Ruslan, 2026-11-19): 'design' — the new design; 'tuner' — the spec's layout
   // built from the components Tuner already has, adapted to a finger. Same data, simulation and 3D
   var variant = load('touch.v2.variant', 'design');
-  function markVariant(){ var r = document.getElementById('tt'); if (r) r.classList.toggle('v-tuner', variant === 'tuner'); }
-  function setVariant(v){ variant = v; keep('touch.v2.variant', v); markVariant(); emit('variant', v); }
-  markVariant();
+  if (variant !== 'design' && variant !== 'core') variant = 'design';
+  function setVariant(v){ variant = v; keep('touch.v2.variant', v); emit('variant', v); }
 
   // ——— projects ———
   // state: needs · calculating · calculated · simulating · paused · simulated
@@ -235,7 +234,7 @@ window.TT = (function(){
   return {
     on:on, emit:emit, t:t, load:load, keep:keep,
     lang:function(){ return lang; }, setLang:setLang,
-    variant:function(){ return variant; }, setVariant:setVariant, isTuner:function(){ return variant === 'tuner'; },
+    variant:function(){ return variant; }, setVariant:setVariant,
     list:function(){ return list; }, get:get, active:active, select:select, set:set, remove:remove, reset:reset, openDemo:openDemo,
     calc:calc, stopCalc:stopCalc, save:save,
     calculated:calculated, found:found, recount:recount, clearSim:clearSim, resetSim:resetSim, opStatus:opStatus, opAt:opAt, goLine:goLine, split:split,

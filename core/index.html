@@ -15,9 +15,14 @@
 <link rel="stylesheet" href="viewport.css">
 <link rel="stylesheet" href="streamedit.css">
 <link rel="stylesheet" href="themes.css">
-<!-- Tuner Touch, variant 3 (?touch=1): the same panels enlarged for a finger and laid out for the panel's screen -->
+<!-- Tuner Touch, variant 3 (?touch=1&f=16&i=32): the same panels in their touch sizes, laid out by the spec.
+     f — the Font setting (text, rows of lists and of the NC text), i — the Icons setting (buttons and bars) -->
 <link rel="stylesheet" href="touch.css">
-<script>if (/[?&]touch=1/.test(location.search)){ var z = +((location.search.match(/[?&]z=([\d.]+)/) || [])[1] || 1.83); document.documentElement.classList.add("touch"); document.documentElement.style.zoom = z; }</script>
+<script>(function(){ var q = location.search; if (!/[?&]touch=1/.test(q)) return;
+  function n(k, d){ var m = q.match(new RegExp('[?&]' + k + '=([\\d.]+)')); return m ? +m[1] : d; }
+  var f = n('f', 16), i = n('i', 32), r = document.documentElement;
+  window.TOUCH = {kf: f / 16, ki: i / 32};
+  r.classList.add('touch'); r.style.setProperty('--kf', f / 16); r.style.setProperty('--ki', i / 32); })();</script>
 <!-- the theme before the first paint (header.js switches it from the logo menu) -->
 <script>try{var t=localStorage.getItem("tuner.theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 </head>

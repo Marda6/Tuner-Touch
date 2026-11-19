@@ -1,34 +1,382 @@
-/* Tuner Touch, variant 3 — the ENCY Core panels of the desktop Tuner prototype, enlarged for a finger and
-   laid out for the panel's screen (only html.touch; the page is opened by the stand as core/?touch=1&z=).
-   The page is zoomed from the stand's Icons setting: 32 → ×1.83, so a Core row of 24 becomes 44, a 20
-   icon 37, the 12 text 22. The panels stay what they are; only where they stand changes. */
+/* Tuner Touch, variant 3 — the desktop Tuner's ENCY Core panels laid out by the spec (TZ v12, sect. 3–4) and
+   sized for a finger (only html.touch; the stand opens core/?touch=1&f=<font>&i=<icons>).
+   No page zoom: the Core components get their touch sizes from the two Tuner settings, as in the touch kit —
+   --kf = font / 16 (text, rows of lists, the NC text), --ki = icons / 32 (buttons, bars, keys).
+   Layout (1280×1024 at 16 / 32): top bar 56 · left panel 460 (the Setup tree's operations over the NC code) ·
+   3D with its keys, the timeline 56 under it · the simulation bar 72 with keys 56. The project tabs row of the
+   spec is gone: the projects switch from the top bar (Ruslan's proposal, 2026-11-19). */
 
-/* ===== The layout for the panel's screen (spec sect. 4): one column on the left — the Setup tree over the
-   NC code with its channel tabs; Parameters takes the code's place by a switch on the tree's head
-   (touch.js); the 3D with its simulation toolbar, visibility rail and view cube gets the rest.
-   The column is 252 Core px wide — 460 at 1280×1024 (the spec's left panel), 547 at 1920×1080 ===== */
-html.touch .workspace{--t-col:252px;--t-split:42%;--free-l:calc(var(--t-col) + 16px) !important;}
-html.touch .dock{left:8px !important;width:var(--t-col) !important;top:8px;bottom:auto;height:calc(var(--t-split) - 12px);}
-html.touch .codecol{left:8px !important;width:var(--t-col) !important;top:calc(var(--t-split) + 4px);bottom:8px;}
-html.touch .panel-tree{flex:1 1 auto;}
-/* fixed columns under a finger: no width grips, no tree / inspector grip, no folding (rule 11) */
-html.touch .wgrip,html.touch .dock-resizer,html.touch .pcol,html.touch .cstrip{display:none !important;}
+html.touch{
+  --t-min:44px;
+  --t-fs:calc(16px * var(--kf));       --t-lh:calc(20px * var(--kf));
+  --t-fs-meta:calc(15px * var(--kf));  --t-lh-meta:calc(18px * var(--kf));
+  --t-fs-title:calc(18px * var(--kf)); --t-lh-title:calc(22px * var(--kf));
+  --t-fs-code:calc(16px * var(--kf));  --t-code-row:calc(32px * var(--kf));
+  --t-row:max(var(--t-min), calc(48px * var(--kf)));
+  --t-row-menu:max(var(--t-min), calc(56px * var(--kf)));
+  --t-btn:max(var(--t-min), calc(44px * var(--ki)));
+  --t-glyph:calc(20px * var(--ki));
+  --t-gap:max(8px, calc(8px * var(--ki)));
+  --t-bar:max(calc(56px * var(--ki)), calc(var(--t-btn) + 12px));
+  --t-view-btn:max(var(--t-min), calc(52px * var(--ki)));
+  --t-sim-btn:max(56px, calc(56px * var(--ki)));
+  --t-simbar:calc(var(--t-sim-btn) + 16px);
+  --t-timeline:max(56px, calc(56px * var(--ki)));
+  /* the simulation panel under the 3D: the timeline's inset over the keys' row, in a Core panel frame */
+  --t-simp:calc(var(--t-timeline) + var(--t-sim-btn) + 12px);
+  --t-left:calc(460px * (var(--kf) + var(--ki)) / 2);
+}
+html.touch body{font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+/* no hover on a touch screen (rule 6.2): the desk's tooltips stay silent; the long-press tip is block 8 */
+html.touch .htip,html.touch .vtip,html.touch .itip{display:none !important;}
+html.touch ::-webkit-scrollbar{width:10px;height:10px;}
+html.touch ::-webkit-scrollbar-thumb{border-width:2px;border-radius:5px;}
+
+/* ===== What is not in sect. 3 steps aside: the desktop header, the inspector and the Stream editor, the grips
+   and folding (rule 11), the Setup tree's own head (its Run program is Calculate in the top bar), the code
+   head's tools, the 3D's bottom bar, cube and process indicator, the selection filters ===== */
+html.touch .topbar:not(.t-top),html.touch .panel-insp,html.touch .dock-resizer,html.touch .wgrip,html.touch .pcol,html.touch .cstrip,
+html.touch .panel-tree > .inner > .ptool,html.touch .panel-tree > .inner > .line,
+html.touch .chead > .pcol,html.touch .chead > .tbtn,html.touch .chead > .tgroup,
+html.touch .seg[data-split],html.touch .vcube,html.touch .vbar,html.touch .vprog,html.touch .vrail-fold,
+html.touch .vrail-grp[aria-label="Selection filter"],html.touch .vrail-grp[aria-label="Application toolbar"],
+html.touch .vbtn[data-v="model"]{display:none !important;}
 html.touch .dock.shut > .colbody,html.touch .codecol.shut > .panel-code{display:flex !important;position:static;}
-html.touch .panel-insp{display:none;}
-/* Parameters in the code's place: the dock runs the whole height — the tree on top, the inspector under it */
-html.touch .workspace.t-params .dock{bottom:8px;height:auto;}
-html.touch .workspace.t-params .panel-tree{flex:0 0 calc(var(--t-split) - 16px);}
-html.touch .workspace.t-params .panel-insp{display:flex;flex:1 1 0;margin-top:8px;}
-html.touch .workspace.t-params .codecol{display:none;}
-/* the switch of the lower half: NC code | Parameters — Core's two tabs on the panel surface */
-html.touch .t-sw{position:absolute;left:8px;width:var(--t-col);top:calc(var(--t-split) + 4px);height:28px;z-index:12;display:flex;gap:2px;padding:2px;
-  border-radius:8px;background:var(--th-panel);box-shadow:inset 0 0 0 1px var(--ec-fg-8);}
-html.touch .t-sw button{flex:1 1 0;border:0;border-radius:6px;background:transparent;color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);cursor:pointer;}
-html.touch .t-sw button:active{background:var(--ec-fg-8);}
-html.touch .t-sw button.cur{background:var(--ec-fg-12);color:var(--ec-fg-96);font-weight:600;}
-html.touch .codecol{top:calc(var(--t-split) + 36px);}
-html.touch .workspace.t-params .panel-insp{margin-top:36px;}
-/* the code panel's head in a 252 column: the program's file name must read — the rare Redo and the Stream
-   editor (bulk edits — in the desktop Tuner) step aside */
-html.touch .chead [data-act="redo"],html.touch .chead #streamBtn{display:none;}
-html.touch .chead .fname{min-width:0;flex:1 1 auto;}
+
+/* ===== Buttons: Core's button in its touch size — fg-8 plate, hover fg-12, pressed fg-16; radius 8 in the
+   bars, 6 on a panel frame (frame 8 − its 2px padding) ===== */
+html.touch .t-b{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:calc(8px * var(--ki));flex:0 0 auto;
+  height:var(--t-btn);min-width:var(--t-btn);padding:0 calc(14px * var(--ki));border-radius:var(--ec-radius-md);
+  background:var(--ec-fg-8);color:var(--ec-fg-96);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);white-space:nowrap;}
+html.touch .t-b:hover{background:var(--ec-fg-12);}
+html.touch .t-b:active,html.touch .t-b.on,html.touch .t-b.open{background:var(--ec-fg-16);color:var(--ec-fg-100);}
+html.touch .t-b.sq{padding:0;width:var(--t-btn);}
+html.touch .t-b.ghost{background:transparent;}
+html.touch .t-b.ghost:hover{background:var(--ec-fg-8);}
+html.touch .t-b.ghost:active{background:var(--ec-fg-16);}
+html.touch .t-b:disabled{opacity:.32;pointer-events:none;}
+html.touch .t-b > img,html.touch .t-b > svg{width:var(--t-glyph);height:var(--t-glyph);flex:0 0 auto;}
+/* Core's sprite icons (ENCY's own cells) drawn larger: the cell zooms with its offsets */
+html.touch .t-b > .ei,html.touch .vbtn > .ei{zoom:calc(1.2 * var(--ki));}
+html.touch .t-b > .ei16{zoom:calc(1.25 * var(--ki));}
+/* Calculate — Core's Run program: a green tint with a green ring; the calculation is needed — solid green */
+html.touch .t-b.run{background:color-mix(in srgb, var(--ec-green) 12%, transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--ec-green) 32%, transparent);}
+html.touch .t-b.run:hover{background:color-mix(in srgb, var(--ec-green) 18%, transparent);}
+html.touch .t-b.pri{background:var(--ec-green);color:var(--th-on-green);box-shadow:none;}
+html.touch .t-b.pri:hover{background:var(--th-green-hover);}
+html.touch .t-b.pri > .ei{filter:brightness(0) saturate(100%);opacity:.8;}
+/* a key with its caption under the icon (rule 6.2: icons are captioned) */
+html.touch .t-cap{flex-direction:column;gap:calc(2px * var(--ki));padding:calc(4px * var(--ki)) calc(8px * var(--ki));}
+html.touch .t-cap > span:not(.ei):not(.cnt){font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;}
+html.touch .t-sp{flex:1 1 auto;min-width:0;}
+
+/* ===== Top bar 56: ◀ Tuner window · Open | the project ▾ (its projects) … errors · state · Calculate | Save ▾ ·
+   View only | — ✕ — Core's header surface ===== */
+html.touch .t-top{flex:0 0 var(--t-bar);height:var(--t-bar);gap:var(--t-gap);padding:0 calc(8px * var(--ki));}
+html.touch .t-top .hdiv{margin:calc(6px * var(--ki)) calc(4px * var(--ki));}
+html.touch .t-win > img{width:calc(28px * var(--ki));height:calc(28px * var(--ki));}
+/* the project: its name over machine · control, and how many are open — a plain count in a small round badge
+   with rounded corners (Ruslan: no words), then one large ▾ for the whole button; air between the words and the count */
+html.touch .t-proj{flex:0 1 auto;min-width:calc(160px * var(--kf));display:flex;align-items:center;gap:calc(16px * var(--ki));
+  height:var(--t-btn);padding:0 calc(12px * var(--ki));border-radius:var(--ec-radius-md);text-align:left;}
+html.touch .t-proj:hover{background:var(--ec-fg-8);}
+html.touch .t-proj:active,html.touch .t-proj.open{background:var(--ec-fg-12);}
+html.touch .t-proj-tx{display:flex;flex-direction:column;gap:1px;min-width:0;}
+html.touch .t-proj-tx b{color:var(--ec-fg-100);font:600 var(--t-fs-title)/var(--t-lh-title) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+html.touch .t-proj-tx span{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+html.touch .t-proj-n{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:calc(28px * var(--ki));height:calc(28px * var(--ki));
+  padding:0 calc(8px * var(--ki));border-radius:6px;background:var(--ec-green-16);color:var(--st-green);
+  font:600 var(--t-fs-meta)/1 var(--ec-font);font-variant-numeric:tabular-nums;}
+html.touch .t-proj-chev{flex:0 0 auto;display:flex;margin-left:calc(-6px * var(--ki));color:var(--ec-fg-64);}
+html.touch .t-proj-chev svg{width:calc(22px * var(--ki));height:calc(22px * var(--ki));transition:transform .12s ease;}
+html.touch .t-proj.open .t-proj-chev svg{transform:rotate(180deg);}
+/* errors: Core's error colour, its tree status icon; a tap — the first error */
+html.touch .t-b.t-err{background:color-mix(in srgb, var(--th-red) 16%, transparent);color:var(--th-red-text);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--th-red) 32%, transparent);}
+html.touch .t-b.t-err:active{background:color-mix(in srgb, var(--th-red) 28%, transparent);}
+html.touch .t-b.t-err{min-width:calc(var(--t-glyph) + 22px * var(--ki) + 76px * var(--kf));}
+html.touch .t-b.t-err.none{visibility:hidden;}
+/* the state: Tuner's tree status icon + its words (Needs calculation · Calculating 45 % · Simulating · Calculated) */
+html.touch .t-state{display:inline-flex;align-items:center;gap:calc(8px * var(--ki));flex:0 0 auto;color:var(--ec-fg-72);white-space:nowrap;
+  font:400 var(--t-fs)/var(--t-lh) var(--ec-font);font-variant-numeric:tabular-nums;}
+html.touch .t-state img{width:var(--t-glyph);height:var(--t-glyph);}
+html.touch .t-state.needs,html.touch .t-state.calc{color:var(--ec-amber);}
+html.touch .t-state.sim{color:var(--st-green);}
+html.touch .t-state{position:relative;}
+/* a calculation's progress: a thin bar under its words, so the state keeps its width */
+html.touch .t-st-tx{position:relative;}
+/* even air in the bar (Ruslan): 12 on both sides of every divider and between the state and its Calculate — the pair
+   stands between two dividers; the state takes its own width, the divider and the errors come up to it */
+html.touch .t-state{margin-right:calc(4px * var(--ki));}
+html.touch .t-state i{position:absolute;left:0;right:0;bottom:calc(-7px * var(--kf));height:3px;border-radius:2px;
+  background:linear-gradient(90deg, var(--ec-amber) var(--p, 0%), var(--ec-fg-12) var(--p, 0%));}
+/* Save ▾ — Core's split button: two plates 2px apart, the outer corners round; coloured while unsaved */
+html.touch .t-split{display:flex;gap:2px;flex:0 0 auto;}
+html.touch .t-split > .t-b:first-child{border-radius:var(--ec-radius-md) 0 0 var(--ec-radius-md);}
+html.touch .t-split > .t-b:last-child{border-radius:0 var(--ec-radius-md) var(--ec-radius-md) 0;width:calc(36px * var(--ki));min-width:var(--t-min);padding:0;}
+html.touch .t-split.dirty > .t-b{background:color-mix(in srgb, var(--ec-green) 16%, transparent);color:var(--ec-fg-100);}
+html.touch .t-b.lock.on{background:color-mix(in srgb, var(--ec-amber) 18%, transparent);color:var(--ec-amber);}
+/* a narrow bar (the project's name squeezed): c2 — Tuner window and Open keep their icons; c1 — the state too */
+html.touch .t-top.c1 .t-state > span{display:none;}
+html.touch .t-top.c1 .t-state{min-width:0;}
+html.touch .t-top.c2 .t-win > span,html.touch .t-top.c2 .t-open > span{display:none;}
+html.touch .t-top.c2 .t-win,html.touch .t-top.c2 .t-open{padding:0;width:var(--t-btn);}
+/* c3 — large settings on 1280: the counts lose their words, Calculate / Cancel and Save keep their icons */
+html.touch .t-top.c3 .w{display:none;}
+html.touch .t-top.c3 .t-b.t-err{min-width:calc(var(--t-glyph) + 28px * var(--ki) + 24px * var(--kf));}
+html.touch .t-top.c3 [data-a="calc"] > span:not(.ei),html.touch .t-top.c3 [data-a="cancel"] > span,html.touch .t-top.c3 [data-a="save"] > span{display:none;}
+html.touch .t-top.c3 [data-a="calc"],html.touch .t-top.c3 [data-a="cancel"],html.touch .t-top.c3 [data-a="save"]{padding:0;width:var(--t-btn);}
+
+/* ===== The workspace: the 3D under everything (Core), the left panel 460 floats on it, 8 from the edges ===== */
+html.touch .workspace{--free-l:calc(var(--t-left) + var(--t-vk-w, 80px) + 8px);--free-r:calc(var(--t-rail-w, 80px) + 16px);}
+html.touch .dock{left:8px !important;top:8px;bottom:auto;width:calc(var(--t-left) - 16px) !important;height:var(--t-dock-h, 45%);}
+html.touch .codecol{left:8px !important;width:calc(var(--t-left) - 16px) !important;top:calc(var(--t-dock-h, 45%) + 16px);bottom:8px;}
+html.touch .panel-tree{flex:1 1 auto;}
+html.touch .workspace.t-edit .dock{display:none;}
+html.touch .workspace.t-edit .codecol{top:8px;}
+
+/* --- the Setup panel: on its frame the channels (or its name) and Split, then Operations | Axes (Core's Mode
+   tabs — the selected one takes the inset's colour), the operations in the inset --- */
+html.touch .t-head{flex:0 0 auto;min-height:calc(var(--t-btn) + 4px);display:flex;align-items:center;gap:var(--t-gap);padding:2px;}
+html.touch .t-head .ptitle{padding-left:calc(10px * var(--ki));font:600 var(--t-fs-title)/var(--t-lh-title) var(--ec-font);}
+html.touch .t-head .tabs{flex:0 1 auto;min-width:0;align-self:stretch;}
+html.touch .tabs{gap:2px;}
+html.touch .seg{height:var(--t-btn);padding:0 calc(16px * var(--ki));border-radius:6px;font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+html.touch .t-head .seg{flex:0 0 auto;min-width:calc(96px * var(--kf));height:auto;}
+html.touch #chTabs{display:none !important;}
+/* the channel switch: Core's segmented control (Find's Text | Command) — a tray (fg-4), its title inside, the
+   numbers 44 wide, the shown one on the fg-16 plate; errors found — a red square in the number's corner, the
+   same offset from its top and right edges and a radius that follows the corner (concentric) */
+html.touch .t-chsw{flex:0 0 auto;display:flex;align-items:stretch;gap:2px;height:var(--t-btn);padding:2px;border-radius:8px;background:var(--ec-fg-4);}
+html.touch .t-chsw[hidden]{display:none;}
+html.touch .t-chl{align-self:center;padding:0 calc(8px * var(--ki)) 0 calc(10px * var(--ki));color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+html.touch .t-chb{position:relative;min-width:calc(var(--t-min) - 4px);padding:0 calc(10px * var(--ki));border-radius:6px;color:var(--ec-fg-72);
+  font:400 var(--t-fs)/var(--t-lh) var(--ec-font);font-variant-numeric:tabular-nums;}
+html.touch .t-chb:active{background:var(--ec-fg-8);}
+html.touch .t-chb.cur{background:var(--ec-fg-16);color:var(--ec-fg-100);}
+html.touch .t-chb.err::after{content:"";position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:1px;background:var(--th-red);}
+html.touch .t-head .t-b,html.touch .chead .t-b{border-radius:6px;}
+html.touch .panel-tree .inner,html.touch .panel-code .inner{padding:calc(6px * var(--ki));}
+html.touch .tree{margin-right:calc(-6px * var(--ki));gap:2px;}
+html.touch .tree::-webkit-scrollbar{width:10px;}
+html.touch .tree::-webkit-scrollbar-thumb{border-width:0 2px;border-radius:5px;}
+/* an operation: Core's tree row at 48 (Font) — the colour ring, the name over its tool, the status */
+html.touch .trow.t-op{min-height:var(--t-row);gap:calc(12px * var(--ki));padding:0 calc(12px * var(--ki)) 0 calc(10px * var(--ki));border-radius:6px;}
+html.touch .t-op .ring{width:calc(20px * var(--ki));height:calc(20px * var(--ki));flex:0 0 auto;}
+html.touch .t-op .ring::before{width:calc(12px * var(--ki));height:calc(12px * var(--ki));border-width:1.5px;}
+html.touch .t-op-tx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+html.touch .t-op-tx b{color:var(--ec-fg-96);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+html.touch .t-op-tx span{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+html.touch .t-op .st{width:calc(20px * var(--ki));height:calc(20px * var(--ki));flex:0 0 auto;}
+html.touch .tempty,html.touch .pempty{font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+html.touch .t-axes[hidden],html.touch .tree[hidden]{display:none;}
+
+/* --- the NC code panel: on its frame the program's file · Open program · Follow; the text 16 in rows of 32
+   (rule 6.9) with Tuner's marks; under it Page up · Page down · Find … Edit --- */
+html.touch .chead{flex:0 0 calc(var(--t-btn) + 4px);height:calc(var(--t-btn) + 4px);gap:var(--t-gap);padding:2px;}
+html.touch .fname{flex:0 1 auto !important;min-width:0;height:var(--t-btn);gap:calc(8px * var(--ki));padding:0 calc(10px * var(--ki)) 0 calc(12px * var(--ki));
+  border-radius:6px;background:var(--ec-fg-8);}
+html.touch .fname:hover{background:var(--ec-fg-12);}
+html.touch .fname:active,html.touch .fname.open{background:var(--ec-fg-16);}
+html.touch .fname .ptitle{font:400 var(--t-fs)/var(--t-lh) var(--ec-font);color:var(--ec-fg-96);}
+html.touch .fname img{width:calc(16px * var(--ki));height:calc(16px * var(--ki));flex:0 0 auto;transition:transform .12s ease;}
+html.touch .fname.open img{transform:rotate(180deg);}
+/* the program's menu: two-line rows — the action over what it does */
+html.touch .t-menu.t-pg{min-width:calc(420px * var(--kf));}
+html.touch .t-mo2{padding-top:calc(6px * var(--kf));padding-bottom:calc(6px * var(--kf));}
+html.touch .t-mo2:disabled{opacity:.32;}
+html.touch .t-mo2 > svg{width:calc(24px * var(--ki));height:calc(24px * var(--ki));flex:0 0 auto;color:var(--ec-fg-80);}
+html.touch .t-mo-tx{display:flex;flex-direction:column;min-width:0;text-align:left;}
+html.touch .t-mo-tx b{color:var(--ec-fg-96);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+html.touch .t-mo-tx small{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* the row's keys: Core's icon buttons of a panel toolbar at 44 — ghost, pressed fg-16; Follow on — the selected
+   plate and a green glyph; Done (editing) — the one filled key */
+html.touch .t-hk{flex:0 0 auto;display:flex;align-items:center;gap:var(--t-gap);}
+html.touch .chead.c1{flex-wrap:wrap;height:auto;flex-basis:auto;row-gap:2px;}
+html.touch .chead.c1 .t-hk{flex:1 0 100%;}
+html.touch .chead.c1 .t-hk .hdiv{margin-left:auto;}
+html.touch .t-hk .hdiv{align-self:stretch;width:1px;margin:calc(8px * var(--ki)) 0;background:var(--ec-fg-12);}
+html.touch .t-ik{color:var(--ec-fg-80);}
+html.touch .t-ik.on{background:var(--ec-fg-16);}
+html.touch .t-ik.on:hover{background:var(--ec-fg-16);}
+html.touch .t-follow.on > svg{color:var(--st-green);}
+
+html.touch .ed-hl,html.touch .ed-ta,html.touch .ed-measure{font-size:var(--t-fs-code);line-height:var(--t-code-row);}
+html.touch .ln,html.touch .ed-cur,html.touch .ed-sim{height:var(--t-code-row);}
+html.touch .ed-hl,html.touch .ed-ta{padding-left:calc(8px * var(--kf));}
+html.touch .ed-gut{flex-basis:calc(30px * var(--kf));width:calc(30px * var(--kf));}
+html.touch .band{width:3px;}
+html.touch .mk{left:calc(7px * var(--kf));transform-origin:8px 8px;transform:translateY(calc((var(--t-code-row) - 16px) / 2)) scale(calc(1.25 * var(--kf)));}
+html.touch .ed-ta[readonly]{caret-color:transparent;cursor:default;}
+html.touch .ed-sim{box-shadow:inset 3px 0 0 var(--st-green);}
+/* Core's Find bar under the text, at the touch size */
+html.touch .ed-find{gap:calc(6px * var(--ki));padding-top:calc(8px * var(--ki));}
+html.touch .ef-row{height:var(--t-btn);gap:var(--t-gap);}
+html.touch .ef-t,html.touch .ef-count{font-size:var(--t-fs);line-height:var(--t-lh);}
+html.touch .ef-seg{border-radius:8px;}
+html.touch .ef-seg button{height:calc(var(--t-btn) - 4px);padding:0 calc(14px * var(--ki));border-radius:6px;font-size:var(--t-fs);line-height:var(--t-lh);}
+html.touch .ef-in{height:var(--t-btn);padding:0 calc(12px * var(--ki));border-radius:6px;font-size:var(--t-fs);line-height:var(--t-lh);}
+html.touch .ef-btn{width:var(--t-btn);height:var(--t-btn);flex-basis:var(--t-btn);border-radius:6px;}
+html.touch .ef-btn svg{width:var(--t-glyph);height:var(--t-glyph);}
+
+
+/* ===== The 3D: on its left the view keys (finger's mode · Fit · four views · Measure), on its right Core's
+   visibility column with Verify Compare; every key captioned, 52 (Icons); glass plates as in Core ===== */
+html.touch .vp-hint{bottom:calc(var(--t-simp) + 16px);color:var(--ec-fg-16);font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+html.touch .t-vkeys{position:absolute;top:8px;left:var(--t-left);bottom:calc(var(--t-simp) + 16px);z-index:25;display:flex;flex-direction:column;
+  align-items:stretch;gap:var(--t-gap);overflow-y:auto;scrollbar-width:none;}
+html.touch .t-vkeys::-webkit-scrollbar{display:none;}
+html.touch .vrail{top:8px;right:8px;bottom:calc(var(--t-simp) + 16px);gap:var(--t-gap);align-items:stretch;}
+html.touch .vrail-grp,html.touch .t-vkeys .vrail-grp{gap:calc(4px * var(--ki));padding:calc(4px * var(--ki));border-radius:12px;}
+html.touch .vrail .vbtn,html.touch .t-vkeys .vbtn{width:auto;min-width:var(--t-view-btn);height:var(--t-view-btn);flex:0 0 auto;flex-direction:column;
+  gap:calc(2px * var(--ki));padding:0 calc(6px * var(--ki));border-radius:8px;color:var(--ec-fg-80);}
+html.touch .vbtn > span:not(.ei):not(.cnt){font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;}
+html.touch .vbtn > svg{width:calc(24px * var(--ki));height:calc(24px * var(--ki));}
+html.touch .vbtn > img{width:calc(28px * var(--ki));height:calc(28px * var(--ki));}
+/* visibility: on — Core's on plate; off — the icon pale (rule 6.2) */
+html.touch .vrail .vbtn[data-g="vis"]:not(.on) > .ei,html.touch .vrail .vbtn[data-v="verify"]:not(.on) > .ei{opacity:.4;}
+html.touch .vrail .vbtn[data-g="vis"]:not(.on) > span:not(.ei){color:var(--ec-fg-48);}
+html.touch .t-vkeys .vbtn.on{color:var(--ec-fg-100);}
+/* short of height: the four views fold into View ▾, the visibility column into Visibility ▾ */
+html.touch .t-vkeys:not(.c) .t-views-c,html.touch .t-vkeys.c .t-views,html.touch .vrail:not(.c) .t-vis-c,html.touch .vrail.c [aria-label="Visibility"]{display:none;}
+html.touch .t-menu-o > svg{width:calc(24px * var(--ki));height:calc(24px * var(--ki));flex:0 0 auto;}
+html.touch .t-menu-o.cur{background:var(--ec-fg-8);}
+html.touch .t-menu-o > .ei{zoom:calc(1.2 * var(--ki));}
+html.touch .t-menu-o .tg{width:calc(44px * var(--ki));height:calc(26px * var(--ki));flex:0 0 auto;}
+html.touch .t-vm,html.touch .t-vis{min-width:calc(280px * var(--kf));}
+
+/* --- the simulation panel under the 3D, its full width: one Core panel — in the inset the timeline (the blocks of
+   the channel on screen, operations as stretches of their colour, the simulated part bright; the playhead a bar with
+   a 44 target; Core has no timeline — the frame and the operation palette are Core's), on the frame under it the
+   keys of Core's simulation panel --- */
+html.touch .t-tl{position:absolute;left:var(--t-left);right:8px;bottom:8px;z-index:20;}
+html.touch .t-tl > .inner{flex:0 0 calc(var(--t-timeline) - 6px);position:relative;justify-content:center;padding:0 calc(22px * var(--ki));cursor:pointer;touch-action:none;}
+html.touch .t-tl-tr{position:relative;height:calc(10px * var(--ki));border-radius:calc(5px * var(--ki));overflow:hidden;display:flex;}
+html.touch .t-tl-tr > i{display:block;height:100%;background:var(--c);}
+html.touch .t-tl-tr.base > i{opacity:.28;}
+html.touch .t-tl-tr.done{position:absolute;left:calc(22px * var(--ki));right:calc(22px * var(--ki));top:50%;margin-top:calc(-5px * var(--ki));
+  clip-path:inset(0 calc(100% - var(--r, 0%)) 0 0);}
+html.touch .t-tl-tr.base > i + i,html.touch .t-tl-tr.done > i + i{box-shadow:inset 1px 0 0 var(--ec-bg);}
+html.touch .t-tl-h{position:absolute;top:0;bottom:0;width:var(--t-min);margin-left:calc(var(--t-min) / -2);
+  left:calc(22px * var(--ki) + (100% - 44px * var(--ki)) * var(--x, 0));display:flex;justify-content:center;align-items:center;pointer-events:none;}
+html.touch .t-tl-h::before{content:"";width:3px;height:calc(40px * var(--ki));border-radius:2px;background:var(--ec-fg-100);
+  box-shadow:0 0 0 2px var(--ec-bg);transition:width .1s ease;}
+html.touch .t-tl.drag .t-tl-h::before{width:5px;}
+html.touch .t-tl-none{color:var(--ec-fg-48);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);text-align:center;}
+
+/* ===== The keys (spec sect. 4, order): this op · up to it · all | next error · previous error | Checks | Stop · Back ·
+   Play · Step … speed. Keys 56 (Icons), captioned, ghost on the frame like Core's simulation panel (hover fg-8,
+   pressed fg-16) — Play the one filled accent; the speed a short slider at the right end ===== */
+html.touch .t-simk{flex:0 0 auto;min-height:calc(var(--t-sim-btn) + 4px);display:flex;align-items:center;min-width:0;padding:2px;}
+html.touch .t-simk .simpanel.c2{flex-wrap:wrap;row-gap:calc(4px * var(--ki));}
+html.touch .t-simk .simpanel.c2 .t-sp{display:none;}
+html.touch .t-simk .simpanel{position:static;transform:none;flex:1 1 auto;min-width:0;width:auto;max-width:none;flex-wrap:nowrap;justify-content:flex-start;
+  gap:var(--t-gap);padding:0;border:0;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;}
+html.touch .simpanel > .vsep:not(.t-sep),html.touch .simpanel [data-a="focus"],html.touch .simpanel [data-a="chips"],html.touch .simpanel [data-a="machine"],
+html.touch .simpanel [data-a="axes"],html.touch .simpanel [data-a="params"],html.touch .simpanel [data-a="stop"],html.touch .simpanel [data-a="more"]{display:none !important;}
+html.touch .simpanel .vbtn{width:var(--t-sim-btn);min-width:var(--t-sim-btn);height:var(--t-sim-btn);flex:0 0 auto;flex-direction:column;gap:calc(2px * var(--ki));
+  padding:0 calc(8px * var(--ki));border-radius:6px;background:transparent;color:var(--ec-fg-80);}
+html.touch .simpanel .vbtn:hover{background:var(--ec-fg-8);}
+html.touch .simpanel .vbtn:active{background:var(--ec-fg-16);}
+html.touch .simpanel .vbtn > span:not(.ei):not(.cnt){color:var(--ec-fg-80);}
+html.touch .simpanel .vbtn.scope{color:var(--st-green);}
+html.touch .simpanel .vbtn.err{color:var(--th-red-text);}
+html.touch .simpanel [data-a="reset"]{color:var(--th-red-text2);}
+html.touch .simpanel .vbtn.play{width:calc(72px * var(--ki));background:var(--ec-green);color:var(--th-on-green);}
+html.touch .simpanel .vbtn > svg{width:calc(24px * var(--ki));height:calc(24px * var(--ki));}
+html.touch .simpanel .vbtn.play:hover{background:var(--th-green-hover);}
+html.touch .simpanel .vbtn > img{width:calc(26px * var(--ki));height:calc(26px * var(--ki));}
+html.touch .simpanel .vbtn .cnt{top:calc(4px * var(--ki));right:calc(4px * var(--ki));bottom:auto;min-width:calc(18px * var(--kf));height:calc(18px * var(--kf));
+  padding:0 4px;border-radius:calc(9px * var(--kf));font:600 calc(12px * var(--kf))/calc(18px * var(--kf)) var(--ec-font);}
+html.touch .simpanel .vsep.t-sep{height:calc(36px * var(--ki));margin:0 calc(2px * var(--ki));}
+/* speed: Core's slider to the right edge, a 44 target, a knob a finger finds; the caption under it */
+html.touch .t-speed{flex:0 1 calc(180px * var(--ki));min-width:calc(100px * var(--ki));align-self:stretch;display:flex;flex-direction:column;align-items:stretch;justify-content:center;
+  padding:0 calc(10px * var(--ki)) 0 calc(14px * var(--ki));color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+html.touch .t-speed .sspeed{flex:0 0 auto;width:auto;height:var(--t-min);margin:0;}
+html.touch .sspeed .tr,html.touch .sspeed .fi{top:calc(50% - 4px);height:8px;border-radius:4px;}
+html.touch .sspeed .kn{top:calc(50% - 12px * var(--ki));width:calc(24px * var(--ki));height:calc(24px * var(--ki));margin-left:calc(-12px * var(--ki));}
+html.touch .sspeed .tp{display:none;}
+html.touch .simpanel.compact .sspeed{display:block;}
+/* the fast-simulation keys step into ⋯ at the bar's start when the bar is short (spec sect. 4) */
+html.touch .simpanel .t-more{display:none !important;}
+html.touch .simpanel.c1 .t-more{display:flex !important;}
+html.touch .simpanel.c1 .vbtn.scope,html.touch .simpanel.c1 .t-sep.s1{display:none !important;}
+
+/* ===== Overlays at the touch size: menus with rows of 56 (Font), Core's popover surface ===== */
+html.touch .vmenu,html.touch .cmenu,html.touch .t-menu{min-width:calc(340px * var(--kf));padding:calc(4px * var(--ki));gap:2px;border-radius:12px;}
+html.touch .vm-head,html.touch .cm-head,html.touch .t-menu-h{padding:calc(10px * var(--kf)) calc(12px * var(--kf)) calc(4px * var(--kf));
+  font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);color:var(--ec-fg-56);}
+html.touch .vm-opt,html.touch .cm-opt,html.touch .t-menu-o{display:flex;align-items:center;gap:calc(12px * var(--ki));min-height:var(--t-row-menu);height:auto;
+  padding:0 calc(14px * var(--ki));border-radius:8px;font:400 var(--t-fs)/var(--t-lh) var(--ec-font);color:var(--ec-fg-96);text-align:left;}
+html.touch .vm-opt:active,html.touch .cm-opt:active:not(:disabled),html.touch .t-menu-o:active{background:var(--ec-fg-12);}
+html.touch .vm-opt img,html.touch .vm-opt .vm-ic,html.touch .t-menu-o > img{width:calc(24px * var(--ki));height:calc(24px * var(--ki));flex:0 0 auto;}
+html.touch .vm-opt .tg{width:calc(44px * var(--ki));height:calc(26px * var(--ki));flex:0 0 auto;}
+html.touch .vm-div,html.touch .cm-div,html.touch .t-menu-d{margin:calc(4px * var(--ki)) calc(8px * var(--ki));}
+html.touch .t-menu{position:fixed;z-index:1000;display:flex;flex-direction:column;background:var(--pop-bg);border:1px solid var(--ec-fg-12);
+  box-shadow:0 12px 36px var(--th-shadow);}
+html.touch .t-menu-d{height:1px;background:var(--ec-fg-8);}
+/* the projects (Ruslan's proposal in place of the tabs row): one row each — the name (● unsaved) over machine ·
+   control · file, a calculation's progress, ✕ (44); the current one marked by a green edge; Open project… under them */
+html.touch .t-pm{min-width:calc(380px * var(--kf));}
+html.touch .t-pm-r{position:relative;display:flex;align-items:center;gap:calc(12px * var(--ki));min-height:var(--t-row-menu);
+  padding:0 calc(6px * var(--ki)) 0 calc(16px * var(--ki));border-radius:8px;cursor:pointer;}
+html.touch .t-pm-r:active{background:var(--ec-fg-12);}
+html.touch .t-pm-r.cur{background:var(--ec-fg-8);}
+html.touch .t-pm-r.cur::before{content:"";position:absolute;left:0;top:calc(8px * var(--kf));bottom:calc(8px * var(--kf));width:3px;border-radius:2px;background:var(--ec-green);}
+html.touch .t-pm-tx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+html.touch .t-pm-tx b{display:flex;align-items:center;gap:8px;color:var(--ec-fg-96);font:600 var(--t-fs)/var(--t-lh) var(--ec-font);white-space:nowrap;}
+html.touch .t-pm-tx b i{width:8px;height:8px;border-radius:50%;background:var(--ec-amber);}
+html.touch .t-pm-tx span{color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+html.touch .t-pm-st{flex:0 0 auto;padding:calc(4px * var(--kf)) calc(10px * var(--kf));border-radius:calc(14px * var(--kf));white-space:nowrap;
+  background:color-mix(in srgb, var(--ec-amber) 14%, transparent);color:var(--ec-amber);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);font-variant-numeric:tabular-nums;}
+html.touch .t-pm-x{width:var(--t-btn);height:var(--t-btn);flex:0 0 auto;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--ec-fg-72);}
+html.touch .t-pm-x:active{background:var(--ec-fg-16);color:var(--ec-fg-100);}
+html.touch .t-pm-x svg{width:var(--t-glyph);height:var(--t-glyph);}
+/* questions: a modal in the middle of the screen, big buttons (rule 11: modals are only confirmations) */
+html.touch .t-scrim{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;}
+html.touch .pop,html.touch .t-ask{position:fixed;z-index:1501;left:50% !important;top:50% !important;transform:translate(-50%, -50%);
+  width:calc(520px * var(--kf));max-width:calc(100vw - 32px);padding:calc(20px * var(--ki));gap:calc(12px * var(--ki));border-radius:12px;
+  display:flex;flex-direction:column;background:var(--pop-bg);border:1px solid var(--ec-fg-12);box-shadow:0 16px 48px var(--th-shadow);}
+html.touch .pop-t{font:600 var(--t-fs-title)/var(--t-lh-title) var(--ec-font);}
+html.touch .pop-d{font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+html.touch .pop-acts{gap:var(--t-gap);margin-top:calc(8px * var(--ki));}
+html.touch .pop-acts .left{margin-right:auto;}
+html.touch .pbtn{height:var(--t-btn);min-width:calc(120px * var(--kf));padding:0 calc(20px * var(--ki));border-radius:8px;background:var(--ec-fg-8);
+  font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+html.touch .pbtn.primary{font-weight:600;}
+html.touch .pbtn.danger{color:var(--th-red-text);}
+/* notifications (spec sect. 3): a line at the bottom of the 3D, no OK; Core's notification surface */
+html.touch .vpop-note,html.touch .toast{left:calc(var(--t-left) + (100vw - var(--t-left)) / 2) !important;right:auto !important;top:auto !important;
+  bottom:calc(var(--t-simp) + 24px) !important;transform:translateX(-50%);width:max-content;max-width:calc(100vw - var(--t-left) - 200px);
+  padding:calc(12px * var(--ki)) calc(18px * var(--ki));gap:calc(12px * var(--ki));border-radius:12px;align-items:center;
+  font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+html.touch .vpop-note.out{transform:translate(-50%, 8px);}
+html.touch .vpop-note img{width:var(--t-glyph);height:var(--t-glyph);flex:0 0 auto;}
+html.touch .vpop-note .vn-t{font:400 var(--t-fs)/var(--t-lh) var(--ec-font);}
+html.touch .vpop-note .vn-t b{display:inline;margin-right:8px;}
+html.touch .vpop-note .vn-time{display:none;}
+/* the Stream editor is not on screen: its preview marks stay off */
+html.touch .ln.pv{background:none;}
+
+/* ===== Axes (spec sect. 3, list B, fig. 7) — in the Setup panel's inset, in the operations' place =====
+   For each axis: Core's buttons − and + at 64×60 (Icons; a held one lit with a green ring), the axis, its value in
+   Core's field (fg-4 on the inset; amber while off the program). Under them: Step — Core's segmented control
+   (Find's Text | Command) Hold · 1 · 0.1 … Back to program. More axes than fit — the rows scroll, the step stays */
+html.touch .t-axes{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:calc(8px * var(--ki));}
+html.touch .t-axes[hidden]{display:none;}
+html.touch .t-ax-rows{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:calc(6px * var(--ki));overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain;}
+html.touch .t-ax-rows::-webkit-scrollbar{display:none;}
+html.touch .t-ax-r{flex:1 1 0;min-height:var(--t-min);max-height:max(var(--t-min), calc(60px * var(--ki)));display:flex;align-items:stretch;gap:var(--t-gap);}
+html.touch .t-ax-n{align-self:center;}
+html.touch .t-b.t-ax-k{width:max(var(--t-min), calc(64px * var(--ki)));height:auto;padding:0;border-radius:6px;touch-action:none;}
+html.touch .t-b.t-ax-k > svg{width:calc(24px * var(--ki));height:calc(24px * var(--ki));}
+html.touch .t-b.t-ax-k.on{background:var(--ec-fg-16);box-shadow:inset 0 0 0 2px var(--ec-green);}
+html.touch .t-ax-n{flex:0 0 calc(24px * var(--kf));text-align:center;color:var(--ec-fg-96);font:600 var(--t-fs-title)/var(--t-lh-title) var(--ec-font);}
+html.touch .t-ax-v{flex:1 1 auto;min-width:0;align-self:stretch;display:flex;align-items:center;justify-content:flex-end;padding:0 calc(14px * var(--ki));
+  border-radius:6px;background:var(--ec-fg-4);color:var(--ec-fg-96);white-space:nowrap;overflow:hidden;
+  font:400 var(--t-fs-title)/var(--t-lh-title) var(--ec-font);font-variant-numeric:tabular-nums;}
+html.touch .t-ax-v.off{color:var(--ec-amber);}
+html.touch .t-ax-foot{flex:0 0 auto;display:flex;align-items:center;gap:var(--t-gap);min-width:0;}
+html.touch .t-ax-l{flex:0 0 auto;color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+html.touch .t-ax-seg button{min-width:calc(var(--t-min) - 4px);}
+html.touch .t-ax-back{border-radius:6px;}

@@ -11,7 +11,8 @@
 (function(){
   'use strict';
 
-  var LH = 16; // line height, px
+  // line height, px; the touch mode (Tuner Touch, variant 3) — the spec's 32 at font 16, in the same share
+  var LH = window.TOUCH ? Math.round(32 * TOUCH.kf) : 16;
   var ERR = {
     gouge:  {t:'Gouging the part',               c:'mk-gouge'},
     holder: {t:'Toolholder collision',           c:'mk-holder'},
@@ -115,6 +116,8 @@
     var pv = null;   // Stream editor preview: the lines a pending edit would change
 
     ta.value = channel.text;
+    // touch: the text is read until "Edit" (spec sect. 3) — a tap puts the cursor and the machine on a block
+    if (window.TOUCH) ta.readOnly = !TOUCH.editing;
 
     // ——— model helpers ———
     function ops(){ return channel.ops; }
@@ -380,7 +383,10 @@
       var line = lineOf(ta.selectionStart), o = opAt(line), i = o ? opIndex(o) : -1,
           next = ops()[i + 1], sel = ta.selectionEnd > ta.selectionStart, isStart = o && o.start === line;
       // [label, action, enabled, kind]: kind 'sub' — an item under a section head, 'danger' — destructive
-      var items = [
+      // touch (spec sect. 3): a long press on a block — "Simulate up to this block"; while editing — the
+      // clipboard; the operation boundaries stay in the desktop Tuner
+      var items = window.TOUCH ? (ta.readOnly ? [['Simulate up to this block', 'simTo', !!(o && o.status !== 'none')]]
+        : [['Cut', 'cut', sel], ['Copy', 'copy', sel], ['Paste', 'paste', true], ['Select all', 'all', true]]) : [
         ['Cut', 'cut', sel], ['Copy', 'copy', sel], ['Paste', 'paste', true], ['Delete', 'del', sel], ['Select all', 'all', true],
         '-', 'Set begin of',
         ['current operation', 'beginCurrent', o && !isStart, 'sub'],
@@ -409,7 +415,9 @@
       menu.addEventListener('mousedown', function(ev){ ev.preventDefault(); });
       menu.addEventListener('click', function(ev){
         var b = ev.target.closest('.cm-opt'); if (!b || b.disabled) return;
-        var a = b.dataset.a; closeMenu(); ta.focus({preventScroll: true});
+        var a = b.dataset.a; closeMenu();
+        if (a === 'simTo'){ if (window.TUNER_SIM) TUNER_SIM.toLine(channel.index, lineOf(ta.selectionStart)); return; }
+        ta.focus({preventScroll: true});
         if (a === 'cut' || a === 'copy') document.execCommand(a);
         else if (a === 'del') document.execCommand('delete');
         else if (a === 'all') ta.select();
@@ -487,6 +495,8 @@
         simBand.hidden = line == null;
         if (line == null) return;
         simBand.style.top = line * LH + 'px';
+        // touch: the text follows only while "Follow" is on
+        if (window.TOUCH && TOUCH.follow === false) return;
         var top = line * LH, h = scroll.clientHeight;
         if (top < scroll.scrollTop + LH || top + 2 * LH > scroll.scrollTop + h) scroll.scrollTop = Math.max(0, top - h / 2);
       },

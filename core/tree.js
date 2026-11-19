@@ -50,9 +50,25 @@
     return key ? '<img class="shev exp' + (closed ? ' shut' : '') + '" data-fold="' + key + '" src="' + A + 'chevron.svg" alt="">' : '<span class="shev"></span>';
   }
 
+  // Tuner Touch, variant 3 (spec sect. 3): the operations of the channel on screen, one row each — the colour
+  // ring, the name over its tool (T# · tool · work offset), the status; 48 high (Font), the whole row a target
+  function renderTouch(p){
+    var S = st(p), c = p.channels[p.view.channel] || p.channels[0];
+    host.innerHTML = c.ops.map(function(o){
+      var meta = [o.tool != null ? 'T' + o.tool : '', o.toolName, o.wcs].filter(Boolean).join(' · ');
+      return '<div class="trow op t-op' + (S.sel.kind === 'op' && S.sel.id === o.id ? ' tsel' : '') + '" data-kind="op" data-ch="' + c.index + '" data-op="' + o.id + '" data-line="' + o.start + '">' +
+        '<span class="ring" style="--cc:var(' + o.color + ')"></span>' +
+        '<span class="t-op-tx"><b>' + esc(o.name) + '</b><span>' + esc(meta) + '</span></span>' +
+        status(o.running ? 'running' : o.status) + '</div>';
+    }).join('') || '<div class="tempty"><b>No operations yet</b>Split builds them from the NC program</div>';
+    var cur = host.querySelector('.tsel');
+    if (cur) cur.scrollIntoView({block: 'nearest'});
+  }
+
   function render(){
     var p = window.TUNER_PROJECT.get();
     if (!p){ host.innerHTML = ''; return; }
+    if (window.TOUCH){ renderTouch(p); return; }
     var S = st(p), multi = p.channels.length > 1, all = [], html = '';
     p.channels.forEach(function(c){ all = all.concat(c.ops); });
     function sel(kind, id){ return S.sel.kind === kind && S.sel.id === id ? ' tsel' : ''; }
@@ -131,6 +147,31 @@
     document.dispatchEvent(new CustomEvent('tuner:select', {detail: {kind: 'op', op: d.op}}));
   });
   document.addEventListener('tuner:ops', render);
+  if (window.TOUCH){
+    // the channel switch shows that channel's operations
+    document.addEventListener('tuner:view', render);
+    // a long press on an operation (spec sect. 3): simulate this one, or up to it
+    host.addEventListener('contextmenu', function(e){
+      var r = e.target.closest('.trow[data-op]'); if (!r) return;
+      e.preventDefault();
+      var p = TUNER_PROJECT.get(), o = p && find(p, +r.dataset.op); if (!o) return;
+      var m = document.createElement('div'), ok = o.status !== 'none';
+      m.className = 'cmenu';
+      m.innerHTML = '<div class="cm-head">' + esc(o.name) + '</div>' +
+        '<button class="cm-opt" data-s="cur"' + (ok ? '' : ' disabled') + '>Simulate this operation</button>' +
+        '<button class="cm-opt" data-s="tocur"' + (ok ? '' : ' disabled') + '>Simulate up to this operation</button>';
+      document.body.appendChild(m);
+      var rr = r.getBoundingClientRect();
+      m.style.left = Math.min(rr.left + 24, innerWidth - m.offsetWidth - 4) + 'px';
+      m.style.top = (rr.bottom + m.offsetHeight > innerHeight - 4 ? rr.top - m.offsetHeight : rr.bottom) + 'px';
+      function close(ev){ if (ev && m.contains(ev.target)) return; m.remove(); document.removeEventListener('pointerdown', close, true); }
+      document.addEventListener('pointerdown', close, true);
+      m.addEventListener('click', function(ev){
+        var b = ev.target.closest('[data-s]'); if (!b || b.disabled) return;
+        close(); if (window.TUNER_SIM) TUNER_SIM.fast(b.dataset.s, o);
+      });
+    });
+  }
   // another project: its tree comes with its own selection, and the inspector follows it
   document.addEventListener('tuner:project', function(){
     render();

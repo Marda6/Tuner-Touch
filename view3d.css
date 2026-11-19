@@ -84,16 +84,3 @@
 .v3-key i{width:14px;height:14px;border-radius:3px;background:var(--c);}
 /* the notification line rises above the cube */
 .tt-3d .tk-toast{bottom:calc(var(--v3-m) + var(--v3-cube) + 8px) !important;}
-
-/* ===== The variant from Tuner's components (spec sect. 3): the view keys in a captioned column on the
-   3D's left — the finger's mode | Fit | the four views | Tuner's rotational body mode (turning). No cube
-   and no row (the new design's); the notifications back at the bottom ===== */
-.tt:not(.v-tuner) .v3-l{display:none;}
-.tt.v-tuner .v3-cube,.tt.v-tuner .v3-tools{display:none;}
-.v3-l{top:var(--v3-m);left:var(--v3-m);}
-.v3-k.cap{width:auto;height:auto;min-width:var(--t-sim-btn);min-height:var(--t-sim-btn);flex-direction:column;gap:calc(3px * var(--ki));
-  padding:calc(6px * var(--ki)) calc(8px * var(--kf));font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);white-space:nowrap;}
-.v3-k.cap > span{max-width:calc(84px * var(--kf));white-space:normal;text-align:center;}
-.v3-l.c .v3-views{display:none;}
-.v3-l.c .v3-k.more{display:flex;}
-.tt.v-tuner .tt-3d .tk-toast{bottom:calc(16px * var(--ki)) !important;}

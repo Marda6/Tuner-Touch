@@ -54,7 +54,9 @@
   function current(){ return tabs.filter(function(x){ return x.id === active; })[0] || null; }
   function emit(){ document.dispatchEvent(new CustomEvent('tuner:tab', {detail: current()})); }
   // scripts loaded after the header read the active tab from here, then follow `tuner:tab`
-  window.TUNER_HEADER = {current: current};
+  // (Tuner Touch, variant 3, switches the projects from its own top bar: list · select · close · add)
+  window.TUNER_HEADER = {current: current, list: function(){ return tabs.slice(); },
+    select: function(id){ select(id); }, close: function(id){ close(id); }, add: function(){ add(); }};
 
   function select(id){
     if (id === active) return;
