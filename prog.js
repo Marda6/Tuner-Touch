@@ -123,7 +123,8 @@
         '<span class="tk-sp"></span>' + ui.btn({act:'openprog', icon:ui.spr('menu', 1, 4), cls:'sq', aria:t('open_prog'), dis:vo}) +
         ui.btn({act:'follow', label:t('follow'), icon:ui.ic('follow'), cls:c.view.follow ? 'on' : ''}) + '</div>' +
       '<div class="pg-body"><div class="pg-text">' + textHTML(p, c, true) + '</div><div class="pg-track"><div class="pg-thumb"></div></div></div>' +
-      '<div class="pg-tools pg-foot">' + ui.btn({act:'pgup', label:t('pgUp'), icon:ui.ic('pgUp'), cls:'ghost'}) + ui.btn({act:'pgdn', label:t('pgDn'), icon:ui.ic('pgDn'), cls:'ghost'}) +
+      '<div class="pg-tools pg-foot">' + ui.btn({act:'pgup', label:t('pgUpS'), icon:ui.ic('pgUp'), cls:'ghost', attrs:' title="' + esc(t('pgUp')) + '"'}) +
+        ui.btn({act:'pgdn', label:t('pgDnS'), icon:ui.ic('pgDn'), cls:'ghost', attrs:' title="' + esc(t('pgDn')) + '"'}) +
         '<span class="tk-sp"></span>' + ui.btn({act:'find', label:t('find'), icon:ui.spr('status', 3, 7), cls:'ghost'}) +
         ui.btn({act:'edit', label:t('edit'), icon:ui.spr('add', 2, 15), cls:'ghost', dis:vo}) + '</div></div>';
   }
@@ -180,7 +181,7 @@
     if (c.view.follow && lastCur[key] != null && lastCur[key] !== c.cur) reveal(c.cur);
     lastCur[key] = c.cur;
     dyn = {key:key, cur:c.cur, simTo:c.simTo, sel:selOp(c), errs:errKey(c)};
-    sizeList(); thumb(); stuck();
+    sizeList(); fitFoot(); thumb(); stuck();
   }
   // the machine moved: the current block, the marks of the newly simulated blocks, the error card, the
   // operations' statuses — in place
@@ -396,5 +397,11 @@
     ol.style.maxHeight = Math.max(4 * row, Math.min(6 * row, room)) + 'px';
     thumb();
   }
-  TT.on('resize', function(){ sizeList(); thumb(); });
+  // the foot of Tuner's variant gives way on a narrow panel: the paging keys keep their icons, then Find and Edit
+  function fitFoot(){
+    var f = host.querySelector('.pg-foot'); if (!f) return;
+    f.classList.remove('c1', 'c2');
+    ['c1', 'c2'].forEach(function(c){ if (f.scrollWidth > f.clientWidth + 1) f.classList.add(c); });
+  }
+  TT.on('resize', function(){ sizeList(); fitFoot(); thumb(); });
 })();

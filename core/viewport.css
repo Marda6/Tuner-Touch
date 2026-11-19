@@ -1,0 +1,168 @@
+/* ENCY Tuner — chrome on the 3D view: the simulation panel on top, the rail on the right, the
+   bottom bar (view cube · view tools · process indicator · CS · notifications · CPU).
+   Placement follows ENCY Tuner; the finish follows the ENCY_UI window: panels on the 3D view are
+   glass (pop-bg 60 % + blur 24 / saturate 1.5 + fg-12 border + the window shadow), the bottom
+   controls float without a plate, like the cube. */
+
+.workspace{--free-r:48px;}                       /* the rail: 2 + 28 + 2 + 8 of air + 8 */
+.workspace.rail-shut{--free-r:8px;}
+
+.vglass{background:color-mix(in srgb, var(--pop-bg) 60%, transparent);border:1px solid var(--ec-fg-12);
+  box-shadow:0 8px 28px var(--th-shadow);-webkit-backdrop-filter:blur(24px) saturate(1.5);backdrop-filter:blur(24px) saturate(1.5);}
+/* no blur: the "plate" the panels had before the glass (panel frame colour at 25 %, blur 2, no border) */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .vglass{background:var(--th-float);border-color:transparent;box-shadow:none;}
+}
+
+/* ——— shared button of the 3D view chrome: 28×28, radius 6 (plate 8 − 2), hover fg-8,
+   on = the Filters' on: ink 10 % with a 25 % ring ——— */
+.vbtn{width:28px;height:28px;flex:0 0 28px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+  color:var(--ec-fg-72);position:relative;}
+.vbtn:hover,.vbtn.open{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.vbtn.on{background:color-mix(in srgb, var(--ec-fg-100) 10%, transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--ec-fg-100) 25%, transparent);}
+.vbtn.on:hover{background:color-mix(in srgb, var(--ec-fg-100) 16%, transparent);}
+.vbtn.dim > .ei{opacity:.4;}
+.vbtn svg{width:16px;height:16px;}
+.vbtn img{width:24px;height:24px;}
+.vbtn:focus-visible{outline:none;box-shadow:inset 0 0 0 1px var(--ec-fg-32);}
+.vbtn[hidden]{display:none;}
+.vsep{flex:0 0 1px;width:1px;height:16px;margin:0 2px;background:var(--ec-fg-12);}
+/* icon sprites of the 3D view: View icons (20px cells) and the function panel (28px drawn at 20) */
+.s-view{background-image:url(assets/ency/view-20.svg);background-size:320px 60px;}
+.s-fn{background-image:url(assets/ency/function-28.svg);background-size:240px 60px;}
+
+/* ===== Simulation panel: centred over the free view, one row ===== */
+/* it never leaves the free view: narrower than its row, it wraps (groups stay whole) */
+.simpanel{position:absolute;top:8px;left:calc((var(--free-l) + 100% - var(--free-r)) / 2);transform:translateX(-50%);z-index:25;
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px;padding:2px;border-radius:8px;white-space:nowrap;
+  width:max-content;max-width:calc(100% - var(--free-l) - var(--free-r) - 16px);}
+.simpanel .vbtn.scope{color:var(--st-green);}
+.simpanel .vbtn.err{color:var(--th-red-text);}
+.simpanel .vbtn.stop{color:var(--th-red-text2);}
+.simpanel .vbtn.off{opacity:.32;pointer-events:none;}
+/* the play button is the one accent on the bar (ENCY simulation bar) */
+.vbtn.play{width:40px;flex-basis:40px;background:var(--ec-green);color:var(--th-on-green);}
+.vbtn.play:hover{background:var(--th-green-hover);color:var(--th-on-green);}
+.vbtn.play .p-pause{display:none;}
+.simpanel.playing .vbtn.play .p-play{display:none;}
+.simpanel.playing .vbtn.play .p-pause{display:block;}
+/* a count on a button (checks on): a small badge in its corner */
+.vbtn .cnt{position:absolute;right:1px;bottom:1px;min-width:12px;height:12px;padding:0 2px;border-radius:6px;
+  background:var(--ec-fg-24);color:var(--ec-fg-100);font:600 9px/12px var(--ec-font);text-align:center;}
+/* speed: the ENCY slider, scaled for a one-row bar — track 6, knob 12 cut out of the track by a ring */
+.sspeed{position:relative;flex:0 0 96px;height:28px;margin:0 6px;cursor:pointer;touch-action:none;}
+.sspeed .tr{position:absolute;left:0;right:0;top:11px;height:6px;border-radius:3px;background:var(--ec-fg-12);}
+.sspeed .fi{position:absolute;left:0;top:11px;height:6px;border-radius:3px;background:var(--st-green);}
+.sspeed .kn{position:absolute;top:8px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--ec-fg-100);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--pop-bg) 80%, transparent);}
+.sspeed:hover .kn,.sspeed.dragging .kn{transform:scale(1.15);}
+.sspeed .tp{position:absolute;bottom:26px;transform:translateX(-50%);padding:2px 6px;border-radius:4px;background:var(--pop-bg);
+  border:1px solid var(--ec-fg-12);color:var(--ec-fg-96);font:500 11px/14px var(--ec-font);opacity:0;pointer-events:none;transition:opacity .12s;}
+.sspeed:hover .tp,.sspeed.dragging .tp{opacity:1;}
+/* a narrow free view: the slider steps into the ⁘ menu */
+.simpanel.compact .sspeed,.simpanel.compact .sp-speedsep{display:none;}
+
+/* ===== Rail on the right: application tools · visibility · selection filters ===== */
+/* ends above the bottom bar (8 + 36 + 8); on a short screen the groups scroll, without a bar */
+.vrail{position:absolute;top:8px;right:8px;bottom:52px;z-index:25;display:flex;flex-direction:column;align-items:center;gap:8px;
+  overflow-y:auto;scrollbar-width:none;}
+.vrail::-webkit-scrollbar{display:none;}
+.vrail > *{flex:0 0 auto;}
+.vrail-grp{display:flex;flex-direction:column;gap:2px;padding:2px;border-radius:8px;}
+.vrail-fold{width:32px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--ec-fg-56);}
+.vrail-fold:hover{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.vrail-fold svg{width:12px;height:12px;transition:transform .12s ease;}
+.workspace.rail-shut .vrail-grp{display:none;}
+.workspace.rail-shut .vrail-fold svg{transform:rotate(180deg);}
+
+/* ===== Bottom bar ===== */
+/* view cube, bottom-left of the free view (ENCY_UI geometry, drawn static for now) */
+.vcube{position:absolute;left:var(--free-l);bottom:8px;z-index:20;width:96px;height:96px;user-select:none;}
+.vcube svg{display:block;width:96px;height:96px;overflow:visible;}
+.vc-face{fill:var(--ec-fg-8);stroke:var(--ec-fg-24);stroke-width:1;stroke-linejoin:round;cursor:pointer;}
+.vc-face:hover{fill:var(--ec-fg-24);}
+.vc-face.top{fill:var(--ec-fg-16);}
+.vc-face.lit{fill:var(--ec-fg-12);}
+.vc-lbl{fill:var(--ec-fg-72);font:500 8px/8px var(--ec-font);letter-spacing:.04em;text-anchor:middle;dominant-baseline:central;
+  pointer-events:none;text-transform:uppercase;}
+.vc-ax{stroke-width:1.2;stroke-linecap:round;fill:none;}
+.vc-axl{font:600 8px/8px var(--ec-font);text-anchor:middle;dominant-baseline:central;}
+.vc-ax.x{stroke:var(--th-axis-x,#ff5c77);} .vc-axl.x{fill:var(--th-axis-x,#ff5c77);}
+.vc-ax.y{stroke:var(--st-green);} .vc-axl.y{fill:var(--st-green);}
+.vc-ax.z{stroke:var(--th-blue-text);} .vc-axl.z{fill:var(--th-blue-text);}
+
+/* three floating groups, 36 high, no plate: [view tools] · [process] · [CS · notifications · CPU] */
+.vbar{position:absolute;bottom:8px;z-index:20;height:36px;display:flex;align-items:center;gap:2px;padding:0 4px;}
+.vb-tools{left:calc(var(--free-l) + 104px);}   /* cube 96 + 8 */
+.vb-sys{right:8px;}
+/* process indicator: fills the gap between the two while something runs */
+.vprog{position:absolute;bottom:8px;z-index:20;height:36px;display:flex;align-items:center;gap:10px;padding:0 6px 0 10px;border-radius:8px;
+  left:calc(var(--free-l) + 104px + var(--tools-w, 120px) + 8px);right:calc(8px + var(--sys-w, 220px) + 8px);}
+.vprog[hidden]{display:none;}
+.vp-t{flex:0 1 auto;min-width:0;color:var(--ec-fg-72);font:400 12px/16px var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.vp-t b{color:var(--ec-fg-96);font-weight:600;}
+.vp-track{flex:1 1 0;min-width:40px;height:4px;border-radius:2px;background:var(--ec-fg-12);overflow:hidden;}
+.vp-track i{display:block;height:100%;width:0;border-radius:2px;background:var(--st-green);transition:width .12s linear;}
+.vp-pct,.vp-time{flex:0 0 auto;color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);font-variant-numeric:tabular-nums;}
+.vp-pct{color:var(--ec-fg-96);min-width:32px;text-align:right;}
+/* cancel: asks first (Tuner: "cancels only after being reconfirmed") */
+.vp-x{height:24px;padding:0 10px;border-radius:var(--ec-radius);background:rgba(255,92,119,.12);box-shadow:inset 0 0 0 1px rgba(255,92,119,.4);
+  color:var(--th-red-text);font:400 12px/16px var(--ec-font);}
+.vp-x:hover{background:rgba(255,92,119,.22);}
+.vp-x.ask{background:var(--th-red);color:#fff;box-shadow:none;}
+
+/* CS: the active one; click lists them; the ⋯ creates one */
+.vcs{display:flex;align-items:center;gap:6px;height:28px;padding:0 8px 0 6px;border-radius:6px;color:var(--ec-fg-80);font:400 12px/16px var(--ec-font);}
+.vcs:hover,.vcs.open{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.vcs svg{width:16px;height:16px;flex:0 0 16px;}
+/* notifications: the bell, the count in the badge colour */
+.vbell .badge{position:absolute;top:2px;right:2px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:var(--ec-badge,#00cf8a);
+  color:var(--th-on-green);font:600 10px/14px var(--ec-font);text-align:center;}
+.vbell .badge[hidden]{display:none;}
+/* CPU load: % and a vertical meter (ENCY) */
+.vcpu{display:flex;align-items:center;gap:6px;height:28px;padding:0 4px;color:var(--ec-fg-72);font:400 12px/16px var(--ec-font);font-variant-numeric:tabular-nums;}
+.vcpu .meter{width:8px;height:20px;border-radius:2px;border:1px solid var(--ec-fg-24);position:relative;overflow:hidden;}
+.vcpu .meter i{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--st-green);transition:height .3s ease;}
+.vcpu.hot .meter i{background:var(--ec-amber);}
+
+/* ===== overlays of the 3D view: menus, popovers, the notification list, tooltips ===== */
+.vmenu{position:fixed;z-index:1000;min-width:200px;padding:2px;border-radius:var(--ec-radius);display:flex;flex-direction:column;gap:1px;
+  background:var(--pop-bg);border:1px solid var(--ec-fg-12);box-shadow:0 6px 20px var(--th-shadow);}
+.vm-head{padding:6px 8px 2px;color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);}
+.vm-opt{display:flex;align-items:center;gap:8px;height:24px;padding:0 8px 0 4px;border-radius:3px;text-align:left;
+  color:var(--ec-fg-72);font:400 12px/16px var(--ec-font);white-space:nowrap;}
+.vm-opt:hover{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.vm-opt.cur{color:var(--ec-fg-100);}
+.vm-opt .ck{width:14px;flex:0 0 14px;text-align:center;color:var(--ec-fg-96);}
+.vm-opt img,.vm-opt .vm-ic{width:20px;height:20px;flex:0 0 20px;}
+.vm-opt .tg{margin-left:auto;width:24px;height:14px;flex:0 0 24px;}
+.vm-opt .val{margin-left:auto;padding-left:16px;color:var(--ec-fg-48);}
+.vm-div{height:1px;margin:2px 0;background:var(--ec-fg-8);}
+/* segmented choice inside a menu (display mode, lathe view, simulation type) */
+.vm-seg{display:flex;gap:2px;padding:2px 4px 4px;}
+.vm-seg button{flex:1 0 0;height:24px;padding:0 6px;border-radius:4px;background:var(--ec-fg-4);color:var(--ec-fg-72);font:400 12px/16px var(--ec-font);white-space:nowrap;}
+.vm-seg button:hover{background:var(--ec-fg-8);}
+.vm-seg button.cur{background:var(--ec-fg-16);color:var(--ec-fg-96);}
+.vm-range{display:flex;align-items:center;gap:8px;padding:2px 8px 6px 26px;color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);}
+.vm-range input{flex:1 1 auto;accent-color:var(--st-green);}
+
+/* the notification list (bell) and a new event popping up next to it */
+.vnote-list{position:fixed;z-index:1000;width:320px;max-height:360px;overflow:auto;padding:8px;border-radius:10px;display:flex;flex-direction:column;gap:6px;}
+.vn-head{display:flex;align-items:center;justify-content:space-between;padding:0 2px 2px;color:var(--ec-fg-96);font:600 12px/16px var(--ec-font);}
+.vn-head button{color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);padding:2px 4px;border-radius:4px;}
+.vn-head button:hover{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.vn{display:flex;gap:8px;padding:6px 8px;border-radius:6px;background:var(--ec-fg-4);}
+.vn img{width:16px;height:16px;flex:0 0 16px;margin-top:0;}
+.vn-t{flex:1 1 auto;min-width:0;color:var(--ec-fg-80);font:400 12px/16px var(--ec-font);}
+.vn-t b{display:block;color:var(--ec-fg-96);font-weight:600;}
+.vn-time{flex:0 0 auto;color:var(--ec-fg-48);font:400 11px/16px var(--ec-font);font-variant-numeric:tabular-nums;}
+.vn-empty{padding:12px 4px;text-align:center;color:var(--ec-fg-48);font:400 12px/16px var(--ec-font);}
+.vpop-note{position:fixed;z-index:999;width:300px;padding:8px 10px;border-radius:10px;display:flex;gap:8px;transition:opacity .25s ease, transform .25s ease;}
+.vpop-note.out{opacity:0;transform:translateY(6px);}
+
+/* tooltip, as in ENCY's function panel: the name, a line, what it does */
+.vtip{position:fixed;z-index:1001;max-width:280px;padding:6px 8px;border-radius:var(--ec-radius);pointer-events:none;
+  background:var(--pop-bg);border:1px solid var(--ec-fg-12);box-shadow:0 6px 20px var(--th-shadow);}
+.vtip[hidden]{display:none;}
+.vtip b{display:block;color:var(--ec-fg-96);font:600 12px/16px var(--ec-font);}
+.vtip b + span{display:block;margin-top:4px;padding-top:4px;border-top:1px solid var(--ec-fg-12);color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);}

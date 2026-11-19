@@ -27,8 +27,19 @@
     document.querySelectorAll('[data-res]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-res') === res); });
     document.querySelectorAll('[data-lang]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lang') === TT.lang()); });
     document.querySelectorAll('[data-var]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-var') === TT.variant()); });
+    core(s);
     document.getElementById('notesBtn').classList.toggle('on', notesOn);
     TT.emit('resize');
+  }
+  // variant 3: the desktop Tuner prototype's ENCY Core panels (core/) in its touch mode, in place of the
+  // touch app. Its zoom follows the Icons setting: 32 → ×1.83 (a Core row of 24 → 44); loaded on first use
+  var frame = document.getElementById('coreFrame');
+  function core(s){
+    var on = TT.variant() === 'core', z = (1.83 * s.icons / 32).toFixed(3);
+    tt.hidden = on; frame.hidden = !on;
+    if (!on) return;
+    if (!frame.getAttribute('src')) frame.setAttribute('src', 'core/index.html?touch=1&z=' + z);
+    else try { frame.contentDocument.documentElement.style.zoom = z; frame.contentWindow.dispatchEvent(new Event('resize')); } catch (e) {}
   }
   function fit(){
     var r = RES[res], aw = stage.clientWidth - 32, ah = stage.clientHeight - 32, k = Math.min(1, aw / r.w, ah / r.h);
@@ -57,6 +68,20 @@
   var STATES = [['needs', 'Нужен расчёт'], ['calculated', 'Рассчитан'], ['simulating', 'Моделирование'], ['paused', 'Пауза'], ['simulated', 'Промоделирован']];
   function renderNotes(){
     var p = TT.active();
+    if (TT.variant() === 'core'){
+      notes.innerHTML = '<h2>Вариант · панели ENCY Core</h2>' +
+        '<p class="lead">Настольный прототип Tuner, собранный раньше на ENCY Core, — те же панели и тот же код (копия в core/), только увеличенные под палец и переложенные под экран стойки. Показывает, каким получится Tuner, если взять его как есть и увеличить.</p>' +
+        '<h3>Как переложено</h3><ul>' +
+        '<li><b>Масштаб</b> — от настройки «Значки» стенда: 32 → ×1,83, строка Core 24 → 44 px, значок 20 → 37, текст 12 → 22. На 1920×1080 — ×2,17.</li>' +
+        '<li><b>Слева одна колонка</b> (как левая панель в ТЗ: 460 px на 1280, 547 на 1920): дерево «Setup» над кодом УП с вкладками каналов. «NC code | Parameters» над нижней частью — на месте кода открывается инспектор.</li>' +
+        '<li><b>Справа 3D</b> с его панелью моделирования, рейкой видимости, кубиком и строкой состояния.</li>' +
+        '<li>Колонки не раздвигаются и не сворачиваются (правило 11). В шапке кода спрятаны «Повторить» и Stream editor — иначе не читается имя файла.</li></ul>' +
+        '<h3>Ограничения</h3><ul>' +
+        '<li>3D — заглушка, как в настольном прототипе; демо-проекты его собственные (3+2, Multichannel, Pawn).</li>' +
+        '<li>Жестов, режима пальца и подлёта камеры нет — панели работают как под мышь, только крупнее.</li>' +
+        '<li>Влияет только «Значки», «Шрифт» — нет. На 1920 рейка видимости по высоте обрезается.</li></ul>';
+      return;
+    }
     notes.innerHTML = (TT.isTuner() ?
       '<h2>Вариант · из компонентов Tuner</h2>' +
       '<p class="lead">Раскладка ТЗ (черновик Владимира), собранная из того, что в Tuner уже есть, под палец: те же данные, моделирование и 3D, что у нового дизайна, — переключатель «Вариант» сверху. Нужен, чтобы сравнивать два подхода на одном стенде.</p>' +

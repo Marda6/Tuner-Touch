@@ -1,0 +1,215 @@
+/* ENCY Tuner — window layout B: the ENCY dock (Setup tree over the inspector) + the NC code
+   column + the 3D view. Anatomy from the ENCY_UI project window (packages/project/app.css):
+   the 3D view fills the workspace edge to edge and the panels float on it, 8px from the edges
+   and from each other. A panel is a light frame (ink k8 over the panel base) around a dark
+   inset; tabs sit on the frame, the content in the inset. */
+
+.app{position:fixed;inset:0;display:flex;flex-direction:column;}
+.workspace{position:relative;flex:1 1 0;min-height:0;
+  --dock-w:300px;--code-w:420px;
+  /* the free 3D view starts right of both columns */
+  --free-l:calc(var(--dock-w) + var(--code-w) + 24px);--free-r:8px;}
+/* inside the columns --ec-bg is the panel base, so insets and frames follow the panel */
+.dock,.codecol{--ec-bg:var(--th-panel);}
+
+/* ===== 3D view: the frameless scene under everything ===== */
+.viewport{position:absolute;inset:0;background:var(--th-base);}
+.vp-hint{position:absolute;top:0;bottom:0;left:var(--free-l);right:var(--free-r);pointer-events:none;
+  display:grid;place-items:center;color:var(--ec-fg-8);font-size:13px;letter-spacing:.04em;}
+
+/* ===== Columns ===== */
+.dock,.codecol{position:absolute;top:8px;bottom:8px;z-index:10;display:flex;flex-direction:column;}
+.dock{left:8px;width:var(--dock-w);}
+.codecol{left:calc(var(--dock-w) + 16px);width:var(--code-w);}
+
+/* width grip: in the 8px gap right of a column, two violet lines on hover and while dragged */
+.wgrip{position:absolute;top:0;bottom:0;right:-7px;width:6px;z-index:11;display:flex;justify-content:center;
+  gap:2px;cursor:col-resize;touch-action:none;}
+.wgrip::before,.wgrip::after{content:"";display:block;width:1px;opacity:0;transition:opacity .12s ease;
+  background:linear-gradient(to bottom, transparent 0%, #9747ff 50%, transparent 100%);}
+.wgrip:hover::before,.wgrip:hover::after,.wgrip.dragging::before,.wgrip.dragging::after{opacity:1;}
+
+/* height grip between the tree and the inspector, the same look turned across */
+.dock-resizer{flex:0 0 6px;display:flex;flex-direction:column;justify-content:center;gap:2px;
+  cursor:row-resize;touch-action:none;}
+.dock-resizer::before,.dock-resizer::after{content:"";display:block;height:1px;opacity:0;transition:opacity .12s ease;
+  background:linear-gradient(to right, transparent 0%, #9747ff 50%, transparent 100%);}
+.dock-resizer:hover::before,.dock-resizer:hover::after,
+.dock-resizer.dragging::before,.dock-resizer.dragging::after{opacity:1;}
+
+/* ===== Collapsing a column (v2's panel__collapse + its collapsed left panel with a vertical label) =====
+   a column folds into a 32px strip (the right rail's width) with its name written down it; the 3D
+   view takes the room. A click on the name shows the panel over the view for a moment ("peek"):
+   the view does not move; a click on the view, Esc or the name again puts it away. Simulation view
+   (sim panel, Ctrl+\) folds both columns at once. layout.js keeps --dock-w / --code-w at 32 for a
+   folded column and the panel's own width in --dock-fw / --code-fw */
+.colbody{flex:1 1 0;min-height:0;display:flex;flex-direction:column;}
+/* the collapse button: narrow, left of the panel's name; hover = the icon brightens */
+.pcol{width:20px;height:28px;flex:0 0 20px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--ec-radius);color:var(--ec-fg-48);}
+.pcol:hover{color:var(--ec-fg-100);}
+.pcol svg{width:16px;height:16px;}
+.pcol .ic-exp,.shut .pcol .ic-min{display:none;}
+.shut .pcol .ic-exp{display:block;}
+.pcol:focus-visible,.vlabel:focus-visible{outline:none;box-shadow:inset 0 0 0 1px var(--ec-fg-32);}
+/* the strip: the panel frame, 32 wide, the column's full height */
+.cstrip{display:none;}
+.shut > .cstrip{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1 1 0;min-height:0;padding:1px;
+  border-radius:8px;background:color-mix(in srgb, var(--th-ink) var(--th-k8), var(--ec-bg));border:1px solid var(--ec-fg-12);}
+.cstrip .pcol{width:28px;flex-basis:28px;}
+.vlabels{display:flex;flex-direction:column;gap:2px;}
+.vlabel{writing-mode:vertical-rl;width:28px;padding:10px 0;border-radius:6px;color:var(--ec-fg-64);
+  font:400 12px/16px var(--ec-font);white-space:nowrap;text-align:center;}
+.vlabel:hover{background:var(--ec-fg-8);color:var(--ec-fg-100);}
+.vlabel.cur{color:var(--ec-fg-96);font-weight:600;}
+.vlabel.open{background:var(--ec-fg-16);color:var(--ec-fg-100);}
+.shut > .wgrip,.dock.shut > .colbody,.codecol.shut > .panel-code{display:none;}
+/* peek: the panel at its own width beside the strip, over the 3D view */
+.dock.peek,.codecol.peek{z-index:30;}
+.dock.shut.peek > .colbody,.codecol.shut.peek > .panel-code{display:flex;position:absolute;top:0;bottom:0;left:40px;}
+.dock.shut.peek > .colbody{width:var(--dock-fw);}
+/* both folded: the dock's panel opens right of the code strip too, so either name stays at hand */
+.workspace.code-shut .dock.shut.peek > .colbody{left:80px;}
+.codecol.shut.peek > .panel-code{width:var(--code-fw);}
+.dock.peek .panel,.codecol.peek .panel{box-shadow:0 8px 28px var(--th-shadow);}
+
+/* ===== Panel: frame + inset ===== */
+/* frame: solid (the scene never bleeds through), border fg-12, radius 8, padding 2 */
+.panel{display:flex;flex-direction:column;gap:2px;min-height:0;padding:2px;border-radius:8px;
+  background:color-mix(in srgb, var(--th-ink) var(--th-k8), var(--ec-bg));border:1px solid var(--ec-fg-12);}
+.panel-tree{flex:1 1 52%;}
+/* 140 = the smallest height either dock panel keeps while the resizer is dragged */
+.panel-insp{flex:1 1 48%;min-height:140px;}
+.panel-code{flex:1 1 0;}
+/* inset: radius 6 = frame 8 − its 2px padding; 6px padding and gaps (the toolbar → divider rhythm) */
+.inner{display:flex;flex-direction:column;gap:6px;flex:1 1 0;min-width:0;min-height:0;padding:6px;
+  border-radius:6px;background:var(--ec-bg);overflow:hidden;}
+.line{flex:0 0 1px;height:1px;background:var(--ec-fg-8);}
+
+/* empty state of a panel body until its block is built: quiet text in the middle */
+.pempty{flex:1 1 0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;padding:0 16px;text-align:center;color:var(--ec-fg-32);font:400 12px/16px var(--ec-font);}
+.pempty b{color:var(--ec-fg-48);font-weight:600;}
+
+/* ===== Toolbar row of an inset: title on the left, 28px buttons on the right ===== */
+.ptool{flex:0 0 28px;height:28px;display:flex;align-items:center;gap:4px;min-width:0;}
+.ptitle{flex:1 1 auto;min-width:0;padding-left:0;color:var(--ec-fg-96);font:600 14px/20px var(--ec-font);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tgroup{display:flex;align-items:center;gap:4px;flex:0 0 auto;}
+.tdiv{flex:0 0 1px;width:1px;height:16px;background:var(--ec-fg-12);}
+/* icon button 28×28: hover fg-8, pressed / on fg-16 (Core: the selected icon button is a white
+   translucent plate, no outline, no green) */
+.tbtn{width:28px;height:28px;flex:0 0 28px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--ec-radius);color:var(--ec-fg-80);}
+.tbtn:hover{background:var(--ec-fg-8);color:var(--ec-fg-100);}
+.tbtn:active,.tbtn.on{background:var(--ec-fg-16);color:var(--ec-fg-100);}
+.tbtn svg{width:16px;height:16px;}
+.tbtn:focus-visible,.seg:focus-visible,.rbtn:focus-visible,.fname:focus-visible{outline:none;box-shadow:inset 0 0 0 1px var(--ec-fg-32);}
+
+/* Run program — the Calculate button of the ENCY tree: green 10 % tint, green 25 % border, 28 high */
+.brun{height:28px;display:flex;align-items:center;gap:4px;padding:0 10px 0 8px;border-radius:var(--ec-radius);
+  background:color-mix(in srgb, var(--ec-green) 10%, transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--ec-green) 25%, transparent);
+  color:var(--ec-fg-100);font:400 12px/16px var(--ec-font);white-space:nowrap;}
+.brun:hover{background:color-mix(in srgb, var(--ec-green) 16%, transparent);}
+/* Add — the ENCY split button: plus 28 | chevron 20 split by a hairline, two hover zones */
+.bsplit{display:flex;height:28px;border-radius:var(--ec-radius);overflow:hidden;background:var(--ec-fg-16);}
+.bsplit > button{height:28px;display:flex;align-items:center;justify-content:center;}
+.bsplit > button:hover{background:var(--ec-fg-12);}
+.bsplit .sp-main{width:28px;}
+.bsplit .sp-main img{width:22px;height:22px;}
+.bsplit .sp-menu{width:20px;border-left:1px solid var(--ec-fg-12);}
+.bsplit .sp-menu img{width:7px;height:4px;}
+
+/* ===== Code column: head, channels =====
+   the head sits on the frame like the inspector's (.ihead), above the channel tabs: the program
+   file holds the channels, and what holds comes above what it holds. 32 high, buttons radius 6
+   (frame 8 − 2); the inset below is the code alone */
+.chead{flex:0 0 32px;height:32px;padding:0 2px;}
+.chead .tbtn,.chead .fname{border-radius:6px;}
+
+/* ===== Code column: channels =====
+   a multichannel machine shows Mode tabs on the frame (one per channel + ⫴); side by side the
+   channels are panes split by a hairline, 6px of air on each side, the one in focus named bright */
+.tabs[hidden]{display:none;}
+.seg.seg-ic{flex:0 0 auto;padding:8px;}
+.seg.seg-ic svg{width:16px;height:16px;display:block;}
+.cpanes{flex:1 1 0;min-height:0;display:flex;gap:6px;}
+.cpane{flex:1 1 0;min-width:0;min-height:0;display:flex;flex-direction:column;gap:6px;}
+.cpane + .cpane{border-left:1px solid var(--ec-fg-8);padding-left:6px;}
+.cp-head{flex:0 0 20px;display:flex;align-items:center;padding:0 2px;color:var(--ec-fg-48);
+  font:400 12px/16px var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cpane.focus .cp-head{color:var(--ec-fg-96);font-weight:600;}
+.cpanes > .pempty{flex:1 1 0;}
+
+/* code column: the file name is a button — click lists the programs (Full program first) */
+.fname{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:2px;height:28px;padding:0 2px 0 4px;
+  border-radius:var(--ec-radius);}
+.fname:hover{background:var(--ec-fg-8);}
+.fname .ptitle{flex:0 1 auto;padding:0;}
+.fname img{width:16px;height:16px;flex:0 0 16px;}
+
+/* ===== ENCY icons: cells of the sprites shipped with ENCY Tuner (Supplement/GUI/SVG),
+   Dflt(row, col) from BtnsDarkIconPack.ini; 28px sprites are drawn at 20 like ENCY_UI does ===== */
+.ei{display:block;flex:0 0 auto;background-repeat:no-repeat;}
+.ei16{width:16px;height:16px;}
+.ei20{width:20px;height:20px;}
+.s-add{background-image:url(assets/ency/additional-20.svg);background-size:360px 80px;}
+.s-st{background-image:url(assets/ency/status-16.svg);background-size:224px 48px;}
+.s-mac{background-image:url(assets/ency/macros-16.svg);background-size:80px 32px;}
+.s-insp{background-image:url(assets/ency/inspector-28.svg);background-size:260px 100px;}
+.i-undo{background-position:-40px -60px;}     /* Undo20 (4,3) */
+.i-redo{background-position:-20px -60px;}     /* Redo20 (4,2) */
+.i-search{background-position:-96px -32px;}   /* Search16 (3,7) */
+.i-run{background-position:0 0;}              /* Run16 (1,1) */
+.i-dots{background-position:-64px 0;}         /* VertDots16 (1,5) */
+.i-p-setup{background-position:-40px -20px;}  /* SetupSel (2,3) */
+.i-p-mach{background-position:-100px -20px;}  /* MachineSetupSel (2,6) */
+.i-p-strat{background-position:-60px -20px;}  /* StrategySel (2,4) */
+.i-p-par{background-position:0 -20px;}        /* ParametersSel (2,1) */
+.i-p-tool{background-position:-120px -20px;}  /* ToolSel (2,7) */
+.i-p-speed{background-position:-140px -20px;} /* SpeedsSel (2,8) */
+.i-p-part{background-position:-80px -20px;}   /* PartSel (2,5) */
+.i-p-wp{background-position:-20px -40px;}     /* WorkpieceSel (3,2) */
+.i-p-fix{background-position:-60px -40px;}    /* FixturesSel (3,4) */
+
+/* ===== Inspector: Mode tabs on the frame, then the rail + the inset ===== */
+/* Core Mode tabs 24:326: 32 high, radius 6, 2px apart; the selected one takes the inset colour */
+.tabs{display:flex;gap:2px;flex:0 0 auto;}
+.seg{flex:1 0 0;min-width:0;display:flex;align-items:center;justify-content:center;padding:8px;border-radius:6px;
+  color:var(--ec-fg-72);font:400 12px/16px var(--ec-font);white-space:nowrap;}
+.seg:hover{background:var(--ec-fg-4);color:var(--ec-fg-96);}
+.seg.active{background:var(--ec-bg);color:var(--ec-fg-100);font-weight:600;}
+.ibody{flex:1 1 0;min-height:0;display:flex;gap:2px;}
+.ibody[hidden]{display:none;}
+/* rail of tab buttons on the frame: 28 wide, button padding 4 + icon 20, radius 6 (frame 8 − 2);
+   hover fg-8, selected = the inset colour (Core inspector button 55:761) */
+.rail{flex:0 0 28px;width:28px;display:flex;flex-direction:column;gap:2px;overflow:hidden;}
+.rbtn{display:flex;align-items:center;justify-content:center;padding:4px;border-radius:6px;}
+.rbtn:hover{background:var(--ec-fg-8);}
+.rbtn.active{background:var(--ec-bg);}
+/* a tab whose icon is not exported yet: the ENCY_UI placeholder square, a step brighter on the frame */
+.opic{width:20px;height:20px;display:flex;align-items:center;justify-content:center;}
+.opic::before{content:"";width:16px;height:16px;border-radius:4px;background:var(--ec-fg-24);}
+.title-row{flex:0 0 24px;display:flex;align-items:center;gap:4px;padding:2px 2px 2px 8px;border-radius:6px;}
+.title-row .t{color:var(--ec-fg-96);font:600 14px/20px var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ===== Inspector head (on the frame, where the Mode tabs were — the same 32px):
+   the mode combobox on the left (v2 panel head: .panel__switch), the mode's buttons on the right ===== */
+.ihead{flex:0 0 32px;height:32px;display:flex;align-items:center;gap:2px;padding:0 2px 0 0;}
+.iswitch{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 4px 0 8px;border-radius:6px;
+  color:var(--ec-fg-100);font:600 12px/16px var(--ec-font);white-space:nowrap;}
+.iswitch:hover,.iswitch.dd-open{background:var(--ec-fg-8);}
+.iswitch img{width:16px;height:16px;flex:0 0 16px;}
+.ihspacer{flex:1 1 auto;min-width:0;}
+.iacts{display:flex;align-items:center;gap:2px;}
+.iacts[hidden]{display:none;}
+/* 28×28, radius 6 (frame 8 − 2); hover fg-8; a switch that is on: the white translucent plate
+   (Core: the selected icon button — no outline, no green) */
+.ibtn{width:28px;height:28px;flex:0 0 28px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--ec-fg-72);}
+.ibtn:hover,.ibtn.dd-open{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.ibtn.on{background:var(--ec-fg-16);}
+.ibtn:disabled{opacity:.32;pointer-events:none;}
+.ibtn:focus-visible,.iswitch:focus-visible{outline:none;box-shadow:inset 0 0 0 1px var(--ec-fg-32);}
+.i-reset{background-position:-112px -16px;}   /* Reset16 (2,8) of status-16 */
+.i-eye{background-position:-60px 0;}          /* GVis (1,4) of the inspector sprite */

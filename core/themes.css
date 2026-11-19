@@ -1,0 +1,277 @@
+/* ENCY Tuner — themes beyond Graphite (Core's default, in tokens.css).
+   A theme is set as data-theme on <html> from the logo menu (header.js: TUNER_THEMES) and kept in
+   localStorage['tuner.theme']. Like ENCY_UI's themes it re-bases the tokens — the panels, the
+   header and the overlays follow, because every surface is mixed from them. */
+
+/* ===== Experimental — "Tuner Device" (Oct 2026), from Ruslan's references: Dieter Rams / Braun,
+   Teenage Engineering. The guide: claude.ai doc "Tuner Device — гайд экспериментальной темы".
+   The window is an instrument of three materials:
+     frame   — anthracite: the header, the seams between tiles, the bezel of the 3D display;
+     body    — matte aluminium tiles with an off-white face: the dock, the code column's toolbar,
+               menus and tooltips; dark ink, monochrome icons;
+     display — near black: the NC code and the 3D view with everything floating on it; mono type,
+               pixel markers.
+   One accent per job, only on controls: signal orange = "run" (the main key of a zone, the slider
+   knob, the display cursor), green = "on" (a latched key's LED, a toggle's track), yellow = input
+   on a display (search hits, the Stream editor preview, focus). Statuses are 6px LEDs.
+   Radii are half of Core's: tile 4, control 2, rows 0. Sizes and the layout stay Core's. ===== */
+
+[data-theme="exp"]{
+  /* palette (nearest RAL in the guide) */
+  --x-frame:#2c2f31;     /* RAL 7021 */
+  --x-display:#0e0f10;   /* RAL 9005 */
+  --x-body:#c6c8c4;      /* RAL 7035 — the tile */
+  --x-face:#e1e0d9;      /* RAL 9002 — the tile's face */
+  --x-ink:#1e1f21;       /* RAL 9017 */
+  --x-phos:#ecebe4;      /* light of a display */
+  --x-orange:#f4511e; --x-orange-hi:#ff6a3d; --x-orange-lo:#d8420f;   /* RAL 2004 */
+  --x-green:#14c25a;     /* RAL 6038 */
+  --x-yellow:#ffe01a;    /* RAL 1026 */
+  --x-red:#ff3b30;       /* RAL 3024 */
+  --x-hatch:repeating-linear-gradient(-45deg, rgba(30,31,33,.5) 0 1px, transparent 1px 5px);
+  --x-pop-shadow:2px 2px 0 rgba(0,0,0,.22);
+
+  --x-grotesk:'Neue Haas Grotesk Text Pro','Neue Haas Grotesk Text','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --x-mono:'Roboto Mono','IBM Plex Mono',Consolas,monospace;
+
+  /* root = the body material (menus and tooltips live here) */
+  --x-fg:var(--x-ink);
+  --x-inv-bg:var(--x-frame); --x-inv-fg:var(--x-face);   /* a selection: inverted, like a pressed key */
+  --x-focus:var(--x-frame);
+
+  /* Core tokens re-based */
+  --th-ink:var(--x-ink); --th-base:var(--x-display);
+  --th-panel:var(--x-face);
+  --pop-bg:#ecebe5;
+  --th-shadow:rgba(0,0,0,.28);
+  --ec-bg:var(--x-face);
+
+  --ec-green:var(--x-orange);   /* Core's accent = the action colour */
+  --ec-green-08:rgba(244,81,30,.08); --ec-green-16:rgba(244,81,30,.16);
+  --th-green-hover:var(--x-orange-hi); --th-on-green:var(--x-ink);
+  --st-green:var(--x-green);
+  --ec-amber:var(--x-yellow);
+  --ec-badge:var(--x-ink);
+  --th-red:var(--x-red); --th-red-text:#c62a20; --th-red-text2:#c62a20; --th-blue-text:#1c6fc2;
+
+  --ec-font:var(--x-grotesk);
+  --ec-radius:2px; --ec-radius-md:4px; --ec-radius-lg:4px;
+}
+
+/* the ink scale, re-declared wherever the material changes (--x-fg is that material's light) */
+[data-theme="exp"],
+[data-theme="exp"] .topbar,[data-theme="exp"] .htab.active,
+[data-theme="exp"] .viewport,[data-theme="exp"] .cpanes,
+[data-theme="exp"] .trow.tsel,[data-theme="exp"] .irow.sel{
+  --ec-fg-100:var(--x-fg);
+  --ec-fg-96:color-mix(in srgb, var(--x-fg) 96%, transparent); --ec-fg-80:color-mix(in srgb, var(--x-fg) 80%, transparent);
+  --ec-fg-72:color-mix(in srgb, var(--x-fg) 72%, transparent); --ec-fg-64:color-mix(in srgb, var(--x-fg) 64%, transparent);
+  --ec-fg-56:color-mix(in srgb, var(--x-fg) 56%, transparent); --ec-fg-48:color-mix(in srgb, var(--x-fg) 48%, transparent);
+  --ec-fg-32:color-mix(in srgb, var(--x-fg) 32%, transparent); --ec-fg-24:color-mix(in srgb, var(--x-fg) 24%, transparent);
+  --ec-fg-16:color-mix(in srgb, var(--x-fg) 16%, transparent); --ec-fg-12:color-mix(in srgb, var(--x-fg) 12%, transparent);
+  --ec-fg-8:color-mix(in srgb, var(--x-fg) 8%, transparent);   --ec-fg-6:color-mix(in srgb, var(--x-fg) 6%, transparent);
+  --ec-fg-4:color-mix(in srgb, var(--x-fg) 4%, transparent);
+}
+/* frame: light ink on anthracite */
+[data-theme="exp"] .topbar{--x-fg:var(--x-face);--ec-bg:var(--x-frame);--x-focus:var(--x-face);}
+/* display: phosphor on black; Tuner's NC colours live only here */
+[data-theme="exp"] .viewport,[data-theme="exp"] .cpanes{
+  --x-fg:var(--x-phos);--ec-bg:var(--x-display);--pop-bg:#161718;
+  --x-inv-bg:var(--x-phos);--x-inv-fg:var(--x-ink);--x-focus:var(--x-yellow);
+  --ec-badge:var(--x-phos);
+  --th-red-text:#ff6a60;--th-red-text2:#ff6a60;--th-blue-text:#4fb3ff;
+  --nc-text:color-mix(in srgb, var(--x-phos) 84%, transparent);--nc-comment:color-mix(in srgb, var(--x-phos) 44%, transparent);
+  --nc-rapid:#ff6a60;--nc-feed:var(--x-green);--nc-arc:#4fb3ff;--nc-aux:#a99bff;}
+/* a selected row: inverted */
+[data-theme="exp"] .trow.tsel,[data-theme="exp"] .irow.sel{--x-fg:var(--x-face);background:var(--x-frame);}
+[data-theme="exp"] .htab.active{--x-fg:var(--x-ink);}
+[data-theme="exp"] body{background:var(--x-frame);}
+
+/* ===== Frame, seams, tiles, the display bezel =====
+   the columns are framed by a 4px anthracite ring (two rings = the 8px seam between tiles, one ring +
+   the bezel = 8px at the window edge); the 3D display gets a 4px bezel and keeps 4px of black air
+   around what floats on it */
+[data-theme="exp"] .viewport{background:var(--x-display);box-shadow:inset 0 0 0 4px var(--x-frame);}
+[data-theme="exp"] .vp-hint{color:var(--ec-fg-24);font:400 11px/16px var(--x-mono);text-transform:uppercase;letter-spacing:.12em;}
+[data-theme="exp"] .dock,[data-theme="exp"] .codecol{background:var(--x-frame);box-shadow:0 0 0 4px var(--x-frame);}
+[data-theme="exp"] .panel{background:var(--x-body);border-color:transparent;border-radius:4px;}
+[data-theme="exp"] .inner{border-radius:2px;}
+[data-theme="exp"] .line{background:var(--ec-fg-16);}
+/* the code display: an inset screen in the face, a 1px dark edge, its own scroll lane */
+[data-theme="exp"] .cpanes{padding:4px 0;border-radius:2px;background:var(--x-display);box-shadow:inset 0 0 0 1px #000;}
+[data-theme="exp"] .cpanes .ed-scroll{margin-right:0;}
+[data-theme="exp"] .cpanes .cp-head{padding:0 8px;font:400 11px/16px var(--x-mono);text-transform:uppercase;letter-spacing:.06em;}
+[data-theme="exp"] .cpanes .ed-find{padding:6px 6px 2px;}
+/* grips: straight orange lines — something to take hold of */
+[data-theme="exp"] :is(.wgrip,.dock-resizer)::before,[data-theme="exp"] :is(.wgrip,.dock-resizer)::after{background:var(--x-orange);}
+
+/* a folded column: an aluminium strip in the frame; its names are mono labels, the open one inverted;
+   a peeked panel carries its own frame ring and a hard shadow */
+[data-theme="exp"] .shut > .cstrip{background:var(--x-body);border-color:transparent;border-radius:4px;}
+[data-theme="exp"] .vlabel{border-radius:2px;font:400 11px/16px var(--x-mono);text-transform:uppercase;letter-spacing:.06em;}
+[data-theme="exp"] .vlabel.cur{font-weight:400;color:var(--ec-fg-100);}
+[data-theme="exp"] .vlabel.open{background:var(--x-inv-bg);color:var(--x-inv-fg);}
+[data-theme="exp"] :is(.dock,.codecol).peek .panel{box-shadow:none;}
+[data-theme="exp"] .dock.peek > .colbody{background:var(--x-frame);}
+[data-theme="exp"] :is(.dock.peek > .colbody,.codecol.peek > .panel-code){box-shadow:0 0 0 4px var(--x-frame), 6px 6px 0 4px rgba(0,0,0,.3);}
+
+/* ===== Header: part of the frame ===== */
+[data-theme="exp"] .topbar{background:var(--x-frame);border-bottom-color:var(--x-frame);--hdiv-bg:var(--ec-fg-12);}
+[data-theme="exp"] .htab.active{background:var(--x-body);}
+[data-theme="exp"] .htab.active .htab-x img{filter:invert(1);}
+
+/* ===== Type ===== */
+[data-theme="exp"] .ptitle,[data-theme="exp"] .title-row .t{font:700 20px/24px var(--ec-font);letter-spacing:-.01em;}
+[data-theme="exp"] .title-row{padding:0 2px 0 6px;border-radius:0;}
+/* labels: mono capitals */
+[data-theme="exp"] .iswitch,
+[data-theme="exp"] :is(.hm-head,.vm-head,.cm-head){font:400 11px/16px var(--x-mono);text-transform:uppercase;letter-spacing:.06em;}
+/* numbers and code: mono */
+[data-theme="exp"] :is(.ed-hl,.ed-ta,.ed-measure){font-family:var(--x-mono);}
+[data-theme="exp"] :is(.cwcs,.toolno,.dropdown .v,.input .v,.input input,.input .u,.roval,.ef-count,.vcs,.vcpu,.vp-time,.vn-time,.vc-lbl,.vc-axl){font-family:var(--x-mono);}
+[data-theme="exp"] .toolno{color:var(--ec-fg-96);}
+
+/* ===== Keys: no plate at rest, a 1px edge on hover, pressed = ink 8 % and the glyph 1px down ===== */
+[data-theme="exp"] :is(.tbtn,.ibtn,.vbtn,.hbtn,.rbtn,.ef-btn,.rowbtn,.vrail-fold,.iswitch,.fname,.vcs,.pcol),
+[data-theme="exp"] .chead :is(.tbtn,.fname){border-radius:2px;}
+[data-theme="exp"] :is(.tbtn,.ibtn,.vbtn,.hbtn,.ef-btn,.rowbtn,.vrail-fold):hover{background:transparent;box-shadow:inset 0 0 0 1px var(--ec-fg-24);}
+[data-theme="exp"] :is(.tbtn,.ibtn,.vbtn,.hbtn,.ef-btn):active,[data-theme="exp"] .hbtn.open{background:var(--ec-fg-8);}
+[data-theme="exp"] :is(.tbtn,.ibtn,.vbtn,.hbtn,.ef-btn):active > *{transform:translateY(1px);}
+/* a latched key: a green LED in the corner */
+[data-theme="exp"] :is(.tbtn,.ibtn){position:relative;}
+[data-theme="exp"] :is(.tbtn,.ibtn,.vbtn).on{background:var(--ec-fg-8);box-shadow:none;}
+[data-theme="exp"] :is(.tbtn,.ibtn,.vbtn).on::after{content:"";position:absolute;top:3px;right:3px;width:4px;height:4px;border-radius:50%;
+  background:var(--x-green);box-shadow:0 0 3px var(--x-green);}
+[data-theme="exp"] :is(.tbtn,.ibtn,.vbtn).on:hover{box-shadow:inset 0 0 0 1px var(--ec-fg-24);}
+/* keyboard focus: 2px — anthracite on the body, light on the frame, yellow on a display */
+[data-theme="exp"] :is(.hbtn,.htab,.tbtn,.seg,.rbtn,.fname,.ibtn,.iswitch,.vbtn):focus-visible{box-shadow:inset 0 0 0 2px var(--x-focus);}
+/* the rail of tabs: a key whose pressed face is the sheet it opens */
+[data-theme="exp"] .rbtn.active{background:var(--ec-bg);}
+[data-theme="exp"] .seg{border-radius:2px;}
+/* secondary key with a split (Add): an edge, not a plate */
+[data-theme="exp"] .bsplit{background:transparent;box-shadow:inset 0 0 0 1px var(--ec-fg-32);border-radius:2px;}
+[data-theme="exp"] .bsplit .sp-menu{border-left-color:var(--ec-fg-32);}
+[data-theme="exp"] .bsplit > button:hover{background:var(--ec-fg-8);}
+
+/* ===== The main key of a zone: signal orange, dark ink; busy = hatched ===== */
+[data-theme="exp"] :is(.brun,.tact.apply){background:var(--x-orange);box-shadow:none;color:var(--x-ink);font-weight:700;border-radius:2px;}
+[data-theme="exp"] :is(.brun,.tact.apply):hover{background:var(--x-orange-hi);}
+[data-theme="exp"] :is(.brun,.tact.apply):active{background:var(--x-orange-lo);}
+[data-theme="exp"] .panel-tree:has(img.st[src$="st-prog.svg"]) .brun{background:var(--x-hatch),var(--x-orange);}
+[data-theme="exp"] .vbtn.play{background:var(--x-orange);color:var(--x-ink);}
+[data-theme="exp"] .vbtn.play:hover{background:var(--x-orange-hi);color:var(--x-ink);box-shadow:none;}
+[data-theme="exp"] .simpanel.playing .vbtn.play{background:var(--x-hatch),var(--x-orange);}
+[data-theme="exp"] .pbtn{border-radius:2px;}
+[data-theme="exp"] .pbtn.primary{font-weight:700;}
+
+/* ===== Segmented switches: one edge round all, 1px partitions, the chosen one inverted ===== */
+[data-theme="exp"] :is(.ef-seg,.se-fns){gap:0;padding:0;border-radius:2px;background:transparent;box-shadow:inset 0 0 0 1px var(--ec-fg-24);}
+[data-theme="exp"] :is(.ef-seg,.se-fns) button{height:24px;border-radius:0;}
+[data-theme="exp"] :is(.ef-seg,.se-fns) button + button{box-shadow:inset 1px 0 0 var(--ec-fg-24);}
+[data-theme="exp"] :is(.ef-seg,.se-fns,.vm-seg) button:is(.on,.cur){background:var(--x-inv-bg);color:var(--x-inv-fg);box-shadow:none;}
+[data-theme="exp"] .vm-seg{gap:0;}
+[data-theme="exp"] .vm-seg button{border-radius:0;background:transparent;box-shadow:inset 0 0 0 1px var(--ec-fg-24);}
+[data-theme="exp"] .vm-seg button + button{margin-left:-1px;}
+[data-theme="exp"] .vm-seg button:hover{background:var(--ec-fg-8);}
+
+/* ===== Lists: full-width rows, no radius; hover ink 6 %, the selection inverted ===== */
+[data-theme="exp"] :is(.trow,.irow){border-radius:0;}
+[data-theme="exp"] .trow:hover,[data-theme="exp"] .irow:hover{background:var(--ec-fg-6);}
+[data-theme="exp"] .irow.off:hover{background:transparent;}
+[data-theme="exp"] .tree .opic::before,[data-theme="exp"] .opic::before{border-radius:1px;}
+/* operation colour: a solid dot with a thin ink edge — data, not an accent */
+[data-theme="exp"] .ring::before{background:var(--cc);border-color:var(--ec-fg-32);}
+/* status: a 6px LED instead of the icon (the image is moved out of its box, the LED is its background) */
+[data-theme="exp"] img.st{object-position:-99px 0;--led:var(--ec-fg-56);
+  background:radial-gradient(circle, var(--led) 0 2.6px, transparent 3.2px);}
+[data-theme="exp"] img.st[src$="st-none.svg"]{background:radial-gradient(circle, transparent 0 2px, var(--ec-fg-48) 2.2px 3px, transparent 3.4px);}
+[data-theme="exp"] img.st[src$="st-partial.svg"]{background:radial-gradient(circle, transparent 0 2px, var(--x-green) 2.2px 3px, transparent 3.4px);}
+[data-theme="exp"] img.st[src$="st-done.svg"]{--led:var(--x-green);}
+[data-theme="exp"] img.st[src$="st-error.svg"]{--led:var(--x-red);}
+[data-theme="exp"] img.st[src$="st-warn.svg"]{background:radial-gradient(circle, var(--x-yellow) 0 2.4px, var(--ec-fg-48) 2.6px 3.2px, transparent 3.6px);}
+[data-theme="exp"] img.st[src$="st-prog.svg"]{--led:var(--x-green);animation:x-blink .8s steps(2, jump-none) infinite;}
+@keyframes x-blink{50%{opacity:.25;}}
+
+/* ===== Fields: recessed — ink 6 % and a bottom edge; values mono; editing = the focus frame ===== */
+[data-theme="exp"] :is(.dropdown,.input){background:var(--ec-fg-6);border-radius:2px 2px 0 0;box-shadow:inset 0 -1px 0 var(--ec-fg-32);}
+[data-theme="exp"] .irow:not(.off) :is(.dropdown,.input):hover{background:var(--ec-fg-8);}
+[data-theme="exp"] :is(.dropdown.dd-open,.input.editing){background:var(--ec-fg-8);border-radius:2px;box-shadow:inset 0 0 0 2px var(--x-focus);}
+[data-theme="exp"] .ef-in{border-radius:2px;}
+[data-theme="exp"] .ef-in:focus{box-shadow:inset 0 0 0 2px var(--x-focus);}
+[data-theme="exp"] .inote{border-radius:2px;}
+/* toggle: a 24×12 track with a square 8px lever; on = lever right, the track green */
+[data-theme="exp"] img:is(.tgl,.tg){width:24px;height:12px;flex-basis:24px;object-position:-99px 0;border-radius:2px;
+  background:linear-gradient(var(--ec-fg-56), var(--ec-fg-56)) 2px 50% / 8px 8px no-repeat, var(--ec-fg-8);
+  box-shadow:inset 0 0 0 1px var(--ec-fg-32);}
+[data-theme="exp"] img:is(.tgl,.tg)[src$="toggle-on.svg"]{box-shadow:none;
+  background:linear-gradient(var(--x-ink), var(--x-ink)) calc(100% - 2px) 50% / 8px 8px no-repeat, var(--x-green);}
+/* Stream editor: what the edit will change — a yellow square, not yellow text on the light body */
+[data-theme="exp"] .se-note.has{color:var(--ec-fg-96);}
+[data-theme="exp"] .se-note.has::before{content:"";display:inline-block;width:8px;height:8px;margin:0 6px 0 2px;vertical-align:0;
+  background:var(--x-yellow);box-shadow:inset 0 0 0 1px var(--ec-fg-32);}
+
+/* ===== Icons: the ENCY sprites are light glyphs with dark inner details, drawn for a dark scene —
+   on the body they show as a grey negative, so the details survive; displays and inverted rows
+   keep them light (grey) ===== */
+[data-theme="exp"] :is(.dock,.codecol .ptool,.codecol .tabs) :is(img:not(.st):not(.tgl),.ei){filter:grayscale(1) invert(1);opacity:.82;}
+[data-theme="exp"] :is(.trow.tsel,.irow.sel) :is(img:not(.st):not(.tgl),.ei){filter:grayscale(1);opacity:.92;}
+[data-theme="exp"] :is(.brun,.tact.apply) .ei{opacity:.9;}
+[data-theme="exp"] :is(.hmenu,.vmenu,.dd-menu,.cmenu) :is(img:not(.tg),.ei,.hm-spr,.vm-ic){filter:grayscale(1) invert(1);opacity:.78;}
+
+/* ===== The code display ===== */
+[data-theme="exp"] .ed-ta{caret-color:var(--x-orange);}
+[data-theme="exp"] .ed-ta::selection{background:color-mix(in srgb, var(--x-orange) 40%, transparent);}
+/* the block the simulation is on: the display's cursor — orange */
+[data-theme="exp"] .ed-sim{background:color-mix(in srgb, var(--x-orange) 14%, transparent);box-shadow:inset 2px 0 0 var(--x-orange);}
+/* search hits: yellow */
+[data-theme="exp"] .fm{background:color-mix(in srgb, var(--x-yellow) 28%, transparent);border-radius:0;}
+[data-theme="exp"] .fm.cur{background:color-mix(in srgb, var(--x-yellow) 56%, transparent);box-shadow:0 0 0 1px var(--x-yellow);}
+[data-theme="exp"] .ln.pv{border-radius:0;}
+/* gutter markers: pixel pictograms, 8×8 cells of 2px (assets/exp) */
+[data-theme="exp"] .mk-flag{background:url(assets/exp/px-flag.svg) 0 0 / 16px 16px no-repeat;}
+[data-theme="exp"] .mk-dot{background:url(assets/exp/px-dot.svg) 0 0 / 16px 16px no-repeat;}
+[data-theme="exp"] .mk-ok{background:url(assets/exp/px-ok.svg) 0 0 / 16px 16px no-repeat;}
+[data-theme="exp"] .mk-idle{background:url(assets/exp/px-idle.svg) 0 0 / 16px 16px no-repeat;}
+[data-theme="exp"] .mk-gouge{background:url(assets/exp/px-gouge.svg) 0 0 / 16px 16px no-repeat;}
+[data-theme="exp"] .mk-holder{background:url(assets/exp/px-holder.svg) 0 0 / 16px 16px no-repeat;}
+[data-theme="exp"] .mk-plunge{background:url(assets/exp/px-plunge.svg) 0 0 / 16px 16px no-repeat;}
+[data-theme="exp"] .mk-rapid{background:url(assets/exp/px-rapid.svg) 0 0 / 16px 16px no-repeat;}
+[data-theme="exp"] .mk-err{background:url(assets/exp/px-err.svg) 0 0 / 16px 16px no-repeat;}
+
+/* ===== The 3D display: what floats on it is part of the picture — a black plate, a 1px edge,
+   no glass, no shadow ===== */
+[data-theme="exp"] .vglass{background:var(--pop-bg);border:1px solid var(--ec-fg-16);box-shadow:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;}
+[data-theme="exp"] :is(.simpanel,.vrail-grp,.vprog){border-radius:2px;}
+[data-theme="exp"] .vbtn .cnt{font-family:var(--x-mono);font-weight:400;}
+/* speed: a scale — 2px track, ticks every 10 % and 50 %, an orange 4×14 knob */
+[data-theme="exp"] .sspeed{background:
+  linear-gradient(90deg, var(--ec-fg-48) 1px, transparent 1px) 0 4px / calc(50% - .5px) 6px repeat-x,
+  linear-gradient(90deg, var(--ec-fg-24) 1px, transparent 1px) 0 18px / calc(10% - .1px) 4px repeat-x;}
+[data-theme="exp"] .sspeed .tr{top:13px;height:2px;border-radius:0;background:var(--ec-fg-24);}
+[data-theme="exp"] .sspeed .fi{top:13px;height:2px;border-radius:0;background:var(--ec-fg-80);}
+[data-theme="exp"] .sspeed .kn{top:7px;width:4px;height:14px;margin-left:-2px;border-radius:1px;background:var(--x-orange);box-shadow:none;}
+[data-theme="exp"] .sspeed:hover .kn,[data-theme="exp"] .sspeed.dragging .kn{transform:none;background:var(--x-orange-hi);}
+[data-theme="exp"] .sspeed .tp{border-radius:2px;font-family:var(--x-mono);}
+/* the process: a segmented meter and one big reading */
+[data-theme="exp"] .vp-track{height:8px;border-radius:0;background:repeating-linear-gradient(90deg, var(--ec-fg-16) 0 4px, transparent 4px 6px);}
+[data-theme="exp"] .vp-track i{border-radius:0;background:repeating-linear-gradient(90deg, var(--ec-fg-96) 0 4px, transparent 4px 6px);}
+[data-theme="exp"] .vp-pct{min-width:56px;font:400 20px/24px var(--x-mono);}
+[data-theme="exp"] .vp-x{border-radius:2px;}
+/* CPU: a column of cells */
+[data-theme="exp"] .vcpu .meter{border-radius:0;border-color:var(--ec-fg-32);}
+[data-theme="exp"] .vcpu .meter i{background:repeating-linear-gradient(0deg, var(--ec-fg-96) 0 2px, transparent 2px 3px);}
+[data-theme="exp"] .vcpu.hot .meter i{background:repeating-linear-gradient(0deg, var(--x-yellow) 0 2px, transparent 2px 3px);}
+[data-theme="exp"] .vbell .badge{color:var(--x-ink);font-family:var(--x-mono);font-weight:400;}
+[data-theme="exp"] .vm-range input{accent-color:var(--x-orange);}
+
+/* ===== Menus, tooltips, pop-ups: light tiles with an anthracite edge and a hard shadow ===== */
+[data-theme="exp"] :is(.hmenu,.vmenu,.dd-menu,.cmenu,.pop,.toast,.htip,.itip,.vtip),
+[data-theme="exp"] body > .vglass{border-color:var(--x-frame);box-shadow:var(--x-pop-shadow);}
+[data-theme="exp"] :is(.hm-opt,.dd-opt,.cm-opt,.vm-opt){border-radius:0;}
+[data-theme="exp"] :is(.vnote-list,.vpop-note){border-radius:4px;}
+[data-theme="exp"] .vn{border-radius:2px;}
+
+/* scrollbars: square thumbs */
+[data-theme="exp"] ::-webkit-scrollbar-thumb,
+[data-theme="exp"] :is(.tree,.irows)::-webkit-scrollbar-thumb{border-radius:0;}

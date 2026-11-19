@@ -1,0 +1,67 @@
+/* ENCY Core — tokens and base reset for ENCY Tuner.
+   Source of truth: Figma file Core (5mNOE8ZjiF0VlYEhaeP4LF) + the ENCY_UI prototype
+   (shared-ui/tokens.css, "Themes" in project/app.css). Only Graphite (the default dark
+   theme) for now; the other themes re-base --th-base / --th-ink and are added later. */
+:root{
+  /* theme: one base (the scene) + one ink every layer is mixed of */
+  --th-base:#0e1010; --th-ink:#f5f5f5;
+  --th-k4:4%; --th-k8:8%; --th-k12:12%;
+  --th-panel:color-mix(in srgb, var(--th-ink) var(--th-k4), var(--th-base));   /* header, panel roots */
+  --pop-bg:color-mix(in srgb, var(--th-ink) var(--th-k12), var(--th-panel));   /* menus, tooltips */
+  --th-shadow:rgba(0,0,0,.5);
+
+  /* background — Layer color/Back */
+  --ec-bg:var(--th-base);
+  --ec-bg-96:color-mix(in srgb, var(--th-base) 96%, transparent);
+  --ec-bg-80:color-mix(in srgb, var(--th-base) 80%, transparent);
+
+  /* foreground — Layer color (#f5f5f5 opacities) */
+  --ec-fg-100:#f5f5f5; --ec-fg-96:rgba(245,245,245,.96); --ec-fg-80:rgba(245,245,245,.80);
+  --ec-fg-72:rgba(245,245,245,.72); --ec-fg-64:rgba(245,245,245,.64); --ec-fg-56:rgba(245,245,245,.56);
+  --ec-fg-48:rgba(245,245,245,.48); --ec-fg-32:rgba(245,245,245,.32); --ec-fg-24:rgba(245,245,245,.24);
+  --ec-fg-16:rgba(245,245,245,.16); --ec-fg-12:rgba(245,245,245,.12); --ec-fg-8:rgba(245,245,245,.08);
+  --ec-fg-6:rgba(245,245,245,.06); --ec-fg-4:rgba(245,245,245,.04);
+
+  /* accents — Core color/Green and its tints */
+  --ec-green:#00a36d; --ec-green-08:rgba(0,163,109,.08); --ec-green-16:rgba(0,163,109,.16);
+  --ec-amber:#ebc14a;
+  --th-on-green:#04150e; --th-green-hover:#00b578;
+  --th-red:#ff5c5e; --th-red-text:#ff8384; --th-red-text2:#ff7072; --th-blue-text:#46acff;
+  --st-green:#00cb9a;   /* statuses "done" (ENCY_UI) */
+  --ec-badge:#00cf8a;   /* notification badges: brighter than the accent so they read on dark */
+  --th-axis-x:#ff5c77;  /* X axis (Y is --st-green, Z --th-blue-text) */
+
+  /* operation colours (v2 op palette) */
+  --op-yellow:#ebda84; --op-blue:#84c9eb; --op-coral:#ff7072; --op-green:#84ebb8; --op-violet:#9584eb;
+
+  /* NC code colouring, as ENCY Tuner colours blocks: rapid red, linear green, arcs blue,
+     M / S and other special words violet, the rest plain; comments quiet */
+  --nc-text:var(--ec-fg-80); --nc-comment:var(--ec-fg-48);
+  --nc-rapid:var(--th-red-text2); --nc-feed:var(--st-green); --nc-arc:var(--th-blue-text); --nc-aux:var(--op-violet);
+
+  /* type — Inter: Body 12/16 400 · Subtitle 12/16 600 · Title 14/20 600 */
+  --ec-font:'Inter','Inter var',system-ui,-apple-system,'Segoe UI',sans-serif;
+
+  /* radii — nesting adds the gap: control 4 + 4 = container 8 */
+  --ec-radius:4px; --ec-radius-md:8px; --ec-radius-lg:12px;
+}
+
+*{box-sizing:border-box}
+/* scrollbars: thin, no arrows. scrollbar-width / -color make Chrome drop ::-webkit-scrollbar,
+   so those two are for Firefox only */
+@supports not selector(::-webkit-scrollbar){
+  *{scrollbar-width:thin;scrollbar-color:var(--ec-fg-16) transparent;}
+}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-button{display:none;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background-color:var(--ec-fg-16);border-radius:4px;
+  border:2px solid transparent;background-clip:content-box;}
+::-webkit-scrollbar-thumb:hover{background-color:var(--ec-fg-24);}
+::-webkit-scrollbar-corner{background:transparent;}
+
+html,body{height:100%}
+body{margin:0;background:var(--ec-bg);color:var(--ec-fg-72);font-family:var(--ec-font);
+  font-size:12px;line-height:16px;-webkit-font-smoothing:antialiased;}
+img{display:block}
+button{font:inherit;color:inherit;margin:0;padding:0;border:0;background:none;cursor:pointer;}

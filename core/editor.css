@@ -1,0 +1,107 @@
+/* ENCY Tuner — NC code editor (editor.js). One scroller holds the gutter and the text, so both
+   scroll together; the gutter stays put when the text scrolls sideways. 12/16 Inter with
+   tabular figures (Core: Inter only) so numbers line up in columns. */
+
+.ed{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:6px;}
+/* the scrollbar lane goes into the inset's right padding, as the ENCY tree and inspector lists do */
+.ed-scroll{position:relative;flex:1 1 0;min-height:0;display:flex;overflow:auto;margin-right:-6px;}
+
+/* ——— gutter: 20 wide — operation band 2px on the left edge, a 16px marker per block ——— */
+.ed-gut{position:sticky;left:0;z-index:2;flex:0 0 20px;width:20px;background:var(--ec-bg);}
+.band{position:absolute;left:0;width:2px;border-radius:1px;opacity:.72;pointer-events:none;}
+.mk{position:absolute;left:3px;width:16px;height:16px;
+  background:url(assets/ency/status-16.svg) no-repeat;background-size:224px 48px;}
+/* cells of status-16.svg (Dflt row, col) */
+.mk-flag{background-position:-112px 0;}        /* (1,8)  operation start */
+.mk-dot{background-position:-80px -16px;}      /* (2,6)  not simulated */
+.mk-ok{background-position:0 -32px;}           /* (3,1)  simulated, no errors */
+.mk-idle{background-position:-16px -32px;}     /* (3,2)  idle: no stock removed */
+.mk-gouge{background-position:-160px 0;}       /* (1,11) gouge */
+.mk-holder{background-position:-176px 0;}      /* (1,12) toolholder collision */
+.mk-plunge{background-position:-192px 0;}      /* (1,13) plunge angle */
+.mk-rapid{background-position:-208px 0;}       /* (1,14) stock removal at rapid */
+.mk-err{background-position:-96px 0;}          /* (1,7)  error */
+
+/* ——— text: the coloured layer and the transparent textarea over it, metrics identical ——— */
+.ed-code{position:relative;flex:1 0 auto;}
+.ed-hl,.ed-ta,.ed-measure{font:400 12px/16px var(--ec-font);font-variant-numeric:tabular-nums;
+  letter-spacing:0;tab-size:4;white-space:pre;}
+.ed-hl{position:relative;width:max-content;min-width:100%;padding:0 16px 16px 4px;color:var(--nc-text);pointer-events:none;}
+.ln{height:16px;}
+/* sized by CSS, not measured: the code area is already as wide as the longest line or the view,
+   and as tall as the text or the view — a measured (rounded) size overflows on fractional scales */
+.ed-ta{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0 16px 16px 4px;border:0;outline:none;resize:none;overflow:hidden;
+  background:transparent;color:transparent;caret-color:var(--ec-fg-100);}
+.ed-ta::selection{background:var(--ec-fg-16);color:transparent;}
+.ed-ta::placeholder{color:var(--ec-fg-32);}
+.ed-measure{position:absolute;visibility:hidden;left:0;top:0;padding:0 0 0 4px;pointer-events:none;}
+/* current line while the editor has focus */
+.ed-cur{position:absolute;left:0;right:0;height:16px;background:var(--ec-fg-4);pointer-events:none;}
+.ed-cur[hidden]{display:none;}
+
+/* block colours, as ENCY Tuner colours them */
+.c-com{color:var(--nc-comment);}
+.c-rapid{color:var(--nc-rapid);}
+.c-feed{color:var(--nc-feed);}
+.c-arc{color:var(--nc-arc);}
+.c-aux{color:var(--nc-aux);}
+/* search hits: green 32 %, radius 2 (the ENCY tree search); the current one stronger, outlined */
+.fm{color:inherit;background:color-mix(in srgb, var(--ec-green) 32%, transparent);border-radius:2px;}
+.fm.cur{background:color-mix(in srgb, var(--ec-green) 56%, transparent);box-shadow:0 0 0 1px var(--ec-green);}
+
+/* ——— Find bar under the text: a hairline, then two 24px rows ——— */
+.ed-find{flex:0 0 auto;display:flex;flex-direction:column;gap:4px;padding-top:6px;border-top:1px solid var(--ec-fg-8);}
+.ed-find[hidden]{display:none;}
+.ef-row{display:flex;align-items:center;gap:4px;height:24px;}
+.ef-t{flex:1 1 auto;padding-left:2px;color:var(--ec-fg-96);font:600 12px/16px var(--ec-font);}
+/* Text | Command: a small segmented control — track fg-4, radius 6 / 4, selected fg-16 */
+.ef-seg{display:flex;gap:2px;padding:2px;border-radius:6px;background:var(--ec-fg-4);}
+.ef-seg button{height:20px;padding:0 8px;border-radius:4px;color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);}
+.ef-seg button:hover{color:var(--ec-fg-96);}
+.ef-seg button.on{background:var(--ec-fg-16);color:var(--ec-fg-100);}
+/* field: fg-4 → hover fg-8 → focus fg-8 + 1px green inset (ENCY tree search) */
+.ef-in{flex:1 1 auto;min-width:0;height:24px;padding:0 8px;border:0;border-radius:var(--ec-radius);outline:none;
+  background:var(--ec-fg-4);color:var(--ec-fg-96);font:400 12px/16px var(--ec-font);}
+.ef-in:hover{background:var(--ec-fg-8);}
+.ef-in:focus{background:var(--ec-fg-8);box-shadow:inset 0 0 0 1px var(--ec-green);}
+.ef-in::placeholder{color:var(--ec-fg-32);}
+.ef-count{flex:0 0 auto;color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.ef-count.none{color:var(--ec-fg-48);}
+.ef-btn{width:24px;height:24px;flex:0 0 24px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--ec-radius);color:var(--ec-fg-72);}
+.ef-btn:hover{background:var(--ec-fg-8);color:var(--ec-fg-100);}
+.ef-btn svg{width:16px;height:16px;}
+
+/* ——— context menu: an overlay (--pop-bg), rows 24, section heads quiet, sub-items indented ——— */
+.cmenu{position:fixed;z-index:1000;min-width:208px;padding:2px;border-radius:var(--ec-radius);display:flex;flex-direction:column;
+  background:var(--pop-bg);border:1px solid var(--ec-fg-12);box-shadow:0 6px 20px var(--th-shadow);}
+.cm-head{padding:6px 8px 2px;color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);}
+.cm-opt{display:flex;align-items:center;height:24px;padding:0 8px;border-radius:3px;text-align:left;
+  color:var(--ec-fg-80);font:400 12px/16px var(--ec-font);white-space:nowrap;}
+.cm-opt.sub{padding-left:16px;}
+.cm-opt:hover:not(:disabled){background:var(--ec-fg-8);color:var(--ec-fg-100);}
+.cm-opt:disabled{color:var(--ec-fg-32);cursor:default;}
+.cm-opt.danger:not(:disabled){color:var(--th-red-text);}
+.cm-div{height:1px;margin:2px 0;background:var(--ec-fg-8);}
+
+/* ——— Split confirmation under the Split button ——— */
+.pop{position:fixed;z-index:1000;width:260px;padding:12px;border-radius:var(--ec-radius-md);display:flex;flex-direction:column;gap:8px;
+  background:var(--pop-bg);border:1px solid var(--ec-fg-12);box-shadow:0 6px 20px var(--th-shadow);}
+.pop-t{color:var(--ec-fg-96);font:600 12px/16px var(--ec-font);}
+.pop-d{color:var(--ec-fg-64);font:400 12px/16px var(--ec-font);}
+.pop-acts{display:flex;justify-content:flex-end;gap:4px;margin-top:4px;}
+.pbtn{height:24px;padding:0 10px;border-radius:var(--ec-radius);background:var(--ec-fg-4);color:var(--ec-fg-80);font:400 12px/16px var(--ec-font);}
+.pbtn:hover{background:var(--ec-fg-12);color:var(--ec-fg-100);}
+.pbtn.primary{background:var(--ec-green);color:var(--th-on-green);}
+.pbtn.primary:hover{background:var(--th-green-hover);}
+/* a short note that fades out (Split result) */
+.toast{position:fixed;z-index:1000;padding:6px 10px;border-radius:var(--ec-radius);background:var(--pop-bg);border:1px solid var(--ec-fg-12);
+  box-shadow:0 6px 20px var(--th-shadow);color:var(--ec-fg-96);font:400 12px/16px var(--ec-font);transition:opacity .2s ease;}
+
+/* the block the simulation is on: a step stronger than the caret line, a green edge on the left */
+.ed-sim{position:absolute;left:0;right:0;height:16px;background:var(--ec-fg-8);box-shadow:inset 2px 0 0 var(--st-green);pointer-events:none;}
+.ed-sim[hidden]{display:none;}
+
+/* Stream editor preview: the blocks the pending edit changes — an amber tint (the colour of
+   "something is about to change", as the partial-preview tag in v2) */
+.ln.pv{background:color-mix(in srgb, var(--ec-amber) 14%, transparent);border-radius:2px;}

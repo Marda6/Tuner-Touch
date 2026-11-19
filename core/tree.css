@@ -1,0 +1,45 @@
+/* ENCY Tuner — Setup tree (tree.js). Rows as in the ENCY tree (Core 26:1333): 24 high, 1px apart,
+   radius 6, hover fg-4, selected fg-8; the identity on the left, the facts on the right. */
+
+/* the scrollbar lane sits in the inset's right padding, like the ENCY lists; the width drives
+   which columns fit (container query below) */
+.tree{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:1px;overflow:auto;margin-right:-6px;
+  scrollbar-gutter:stable;container-type:inline-size;}
+.tree::-webkit-scrollbar{width:6px;}
+.tree::-webkit-scrollbar-thumb{border-width:0 2px;border-radius:3px;background-color:var(--ec-fg-24);background-clip:content-box;}
+
+.trow{flex:0 0 auto;display:flex;align-items:center;gap:4px;min-height:24px;padding:2px;border-radius:6px;cursor:pointer;}
+.trow:hover{background:var(--ec-fg-4);}
+.trow.tsel{background:var(--ec-fg-8);}
+.tlayer{display:flex;align-items:center;flex:1 1 0;min-width:0;}
+/* chevron 12×20: open by default, turned when the branch is folded; an empty slot keeps the column */
+.shev{width:12px;height:20px;flex:0 0 12px;transition:transform .12s ease;}
+.shev.exp{cursor:pointer;}
+.shev.shut{transform:rotate(-90deg);}
+.micn{width:20px;height:20px;flex:0 0 20px;}
+/* an icon not exported yet (operation, setup, channel): the ENCY_UI placeholder square */
+.tree .opic{width:20px;height:20px;flex:0 0 20px;display:flex;align-items:center;justify-content:center;}
+.tree .opic::before{content:"";width:16px;height:16px;border-radius:4px;background:var(--ec-fg-8);}
+.rlabel{display:flex;align-items:center;height:20px;padding:0 2px;min-width:0;}
+.rlabel span{color:var(--ec-fg-96);font:400 12px/16px var(--ec-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* facts: work offset · T# (green, as in ENCY) · tool · colour · status — one column each */
+.pslot{display:flex;align-items:center;justify-content:flex-end;gap:4px;flex:0 1 auto;min-width:0;
+  font:400 12px/16px var(--ec-font);font-variant-numeric:tabular-nums;}
+.cwcs{flex:0 0 28px;color:var(--ec-fg-72);}
+.toolno{flex:0 0 28px;color:var(--st-green);}
+.tl{flex:0 0 112px;min-width:0;color:var(--ec-fg-56);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.interp{flex:0 1 auto;max-width:176px;min-width:0;color:var(--ec-fg-56);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.interp.none{color:var(--ec-fg-48);}
+/* operation colour: the ring of icn_operation_color — r 4.5, 1px stroke, 16 % fill */
+.ring{width:16px;height:16px;flex:0 0 16px;display:flex;align-items:center;justify-content:center;}
+.ring.none::before{display:none;}
+.ring::before{content:"";width:9px;height:9px;border-radius:50%;border:1px solid var(--cc);
+  background:color-mix(in srgb, var(--cc) 16%, transparent);}
+.st{width:16px;height:16px;flex:0 0 16px;}
+
+/* a narrow dock keeps the name readable: the tool name goes first (its T# stays) */
+@container (max-width: 360px){ .tl{display:none;} }
+
+.tempty{padding:16px 16px 0;text-align:center;color:var(--ec-fg-32);font:400 12px/16px var(--ec-font);}
+.tempty b{display:block;color:var(--ec-fg-48);font-weight:600;}

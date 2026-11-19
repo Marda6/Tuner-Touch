@@ -1,0 +1,91 @@
+/* ENCY Tuner — window header (title bar).
+   Anatomy follows the ENCY_UI .topbar (shared-ui/chrome.css); the button set follows the
+   ENCY Tuner main window (docs.encycam.com/ENCYTuner/2/en/30.html):
+     logo | Menu · New · Open · Save · Export | project tabs + "+" | More · Min · Max · Close
+   One rhythm for the whole bar: 4px between neighbours, 4px from a divider on both sides,
+   6px from the window edges. */
+
+/* 44px with a 1px hairline at the bottom (fg-12, like the panel borders); the bottom padding
+   gives up that 1px so the buttons stay centred. Surface: the panel-frame step — ink k8 over
+   the panel base (--ec-bg is re-based to --th-panel inside the bar) */
+.topbar{--ec-bg:var(--th-panel);
+  flex:0 0 44px;display:flex;align-items:center;gap:4px;padding:6px 6px 5px 6px;
+  background:color-mix(in srgb, var(--th-ink) var(--th-k8), var(--ec-bg));
+  border-bottom:1px solid var(--ec-fg-12);
+  --hdiv-bg:linear-gradient(180deg, transparent 0%, var(--ec-fg-8) 50%, transparent 100%);
+  user-select:none;}
+
+.hgroup{display:flex;align-items:center;gap:4px;flex:0 0 auto;}
+/* divider: 1px, full bar height, fades out at both ends — one look everywhere */
+.hdiv{width:1px;flex:0 0 1px;align-self:stretch;background:var(--hdiv-bg);}
+
+/* icon button 32×32: hover fg-12, pressed / open fg-16 */
+.hbtn{position:relative;width:32px;height:32px;flex:0 0 32px;display:flex;align-items:center;
+  justify-content:center;border-radius:var(--ec-radius);}
+.hbtn:hover{background:var(--ec-fg-12);}
+.hbtn:active,.hbtn.open{background:var(--ec-fg-16);}
+.hbtn.open:hover{background:var(--ec-fg-24);}
+.hbtn:focus-visible,.htab:focus-visible{outline:none;box-shadow:inset 0 0 0 1px var(--ec-fg-32);}
+/* Ruslan's Figma exports (icn_header) are drawn on a 30px frame — shown 1:1;
+   the ENCY window glyphs are drawn on 32 */
+.hicn30{width:30px;height:30px;}
+.hicn32{width:32px;height:32px;}
+.hicn12{width:12px;height:12px;}
+
+/* ===== Project tabs =====
+   gap 9 = 4 + 1px divider + 4, so a tab sits 4px from the divider on each side */
+.htabs{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:9px;align-self:stretch;overflow:hidden;}
+/* 32 high, 180 wide (shrinks), radius 4; hover fg-8, active fg-16 — project tabs stay light.
+   No overflow:hidden on the tab: its ::before divider sits in the gap, outside the box */
+.htab{position:relative;display:flex;align-items:center;gap:8px;height:32px;width:180px;flex:0 1 180px;
+  min-width:56px;padding:0 11px;border-radius:var(--ec-radius);}
+.htab:hover{background:var(--ec-fg-8);}
+.htab.active{background:var(--ec-fg-16);}
+.htab:not(:first-child)::before,.htabs .hbtn::before{content:"";position:absolute;left:-5px;top:0;bottom:0;
+  width:1px;background:var(--hdiv-bg);}
+.htab-t{flex:1 1 0;min-width:0;color:var(--ec-fg-72);font:400 12px/16px var(--ec-font);text-align:left;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.htab:hover .htab-t{color:var(--ec-fg-80);}
+.htab.active .htab-t{color:var(--ec-fg-96);}
+/* close cross 9px: visible on the active tab and on hover (.7), full on its own hover;
+   the 16px box only widens the hit area to the left — the glyph stays 11px from the tab edge */
+.htab-x{width:16px;height:16px;flex:0 0 16px;margin-left:-7px;display:flex;align-items:center;
+  justify-content:flex-end;opacity:0;}
+.htab-x img{width:9px;height:9px;}
+.htab.active .htab-x,.htab:hover .htab-x{opacity:.7;}
+.htab-x:hover{opacity:1;}
+
+/* ===== Rich tooltip =====
+   An overlay: a step lighter than the panels (--pop-bg), border fg-12, the tooltip shadow.
+   Name (Subtitle 12/16 600) + optional description (Body 12/16, fg-56). */
+.htip{position:fixed;z-index:1000;max-width:260px;padding:6px 8px;border-radius:var(--ec-radius);
+  background:var(--pop-bg);border:1px solid var(--ec-fg-12);box-shadow:0 6px 20px var(--th-shadow);
+  pointer-events:none;opacity:0;transition:opacity .12s ease;}
+.htip.show{opacity:1;}
+.htip-t{color:var(--ec-fg-96);font:600 12px/16px var(--ec-font);white-space:nowrap;}
+.htip-d{color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);margin-top:2px;}
+
+/* ===== Logo menu (ENCY_UI's, with Tuner's items): Settings · Theme › | About · License manager |
+   User manual · Support request · Updates. Overlay surface, 24px rows, a 20px icon slot with the
+   menu icons of ENCY Tuner (Dark_Menu.svg, 28px cells drawn at 20). Theme shows the current one
+   (a swatch of its base, the name at the end) and opens the list to the right ===== */
+.hmenu{position:fixed;z-index:1000;min-width:120px;padding:2px;border-radius:var(--ec-radius);display:flex;flex-direction:column;gap:1px;
+  background:var(--pop-bg);border:1px solid var(--ec-fg-12);box-shadow:0 6px 20px var(--th-shadow);}
+.hm-main{min-width:220px;}
+.hm-head{padding:5px 6px 2px;color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);}
+.hm-opt{display:flex;align-items:center;gap:4px;height:24px;padding:0 6px;border-radius:3px;cursor:pointer;text-align:left;
+  color:var(--ec-fg-72);font:400 12px/16px var(--ec-font);white-space:nowrap;}
+.hm-main .hm-opt{padding:0 4px 0 2px;}
+.hm-opt:hover,.hm-opt.open{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.hm-opt.cur{color:var(--ec-fg-100);}
+.hm-ck{width:14px;flex:0 0 14px;text-align:center;color:var(--ec-fg-96);}
+.hm-ic{width:20px;height:20px;flex:0 0 20px;display:flex;align-items:center;justify-content:center;}
+.hm-spr{background:url(assets/ency/menu-28.svg) no-repeat;background-size:200px 140px;opacity:.9;}
+.hm-opt:hover .hm-spr,.hm-opt.open .hm-spr{opacity:1;}
+.hm-sw{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--ec-fg-24);}
+.hm-t{flex:1 1 auto;}
+.hm-val{padding-left:16px;color:var(--ec-fg-48);}
+.hm-arr{width:16px;height:16px;flex:0 0 16px;color:var(--ec-fg-56);}
+.hm-div{height:1px;margin:2px 0;background:var(--ec-fg-8);}
+.hm-sub .hm-opt{padding:0 8px 0 4px;}
+.hm-sub .hm-sw{margin-right:4px;}

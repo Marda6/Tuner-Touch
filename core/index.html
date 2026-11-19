@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ENCY Tuner</title>
+<!-- Target screen: 1920×1080 at 125% system scale → a 1536×864 CSS working area -->
+<meta name="ency-target-viewport" content="1536x864">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="header.css">
+<link rel="stylesheet" href="layout.css">
+<link rel="stylesheet" href="editor.css">
+<link rel="stylesheet" href="tree.css">
+<link rel="stylesheet" href="inspector.css">
+<link rel="stylesheet" href="viewport.css">
+<link rel="stylesheet" href="streamedit.css">
+<link rel="stylesheet" href="themes.css">
+<!-- Tuner Touch, variant 3 (?touch=1): the same panels enlarged for a finger and laid out for the panel's screen -->
+<link rel="stylesheet" href="touch.css">
+<script>if (/[?&]touch=1/.test(location.search)){ var z = +((location.search.match(/[?&]z=([\d.]+)/) || [])[1] || 1.83); document.documentElement.classList.add("touch"); document.documentElement.style.zoom = z; }</script>
+<!-- the theme before the first paint (header.js switches it from the logo menu) -->
+<script>try{var t=localStorage.getItem("tuner.theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="workspace" id="ws">
+
+    <!-- ===== 3D view ===== -->
+    <main class="viewport">
+      <div class="vp-hint">3D view</div>
+    </main>
+
+    <!-- ===== Dock: Setup tree over the inspector ===== -->
+    <aside class="dock" id="dock">
+      <div class="wgrip" id="dockGrip" title="Drag to resize the panel"></div>
+
+      <!-- collapsed: a strip with the panel's name; the name shows the panel over the 3D view -->
+      <div class="cstrip">
+        <button class="pcol" data-col="dock"><svg class="ic-min" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4"/><path d="M4 14h6v6"/></svg><svg class="ic-exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M10 20H4v-6"/></svg></button>
+        <button class="vlabel" data-peek="dock" title="Setup — show the panel over the 3D view">Setup</button>
+      </div>
+
+      <div class="colbody">
+      <section class="panel panel-tree" id="panelTree">
+        <div class="inner">
+          <div class="ptool">
+            <button class="pcol" data-col="dock"><svg class="ic-min" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4"/><path d="M4 14h6v6"/></svg><svg class="ic-exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M10 20H4v-6"/></svg></button>
+            <span class="ptitle">Setup</span>
+            <div class="tgroup">
+              <!-- Run program: calculates the operations (ENCY's Calculate) -->
+              <button class="brun" data-act="run" title="Run program — calculate the operations"><span class="ei ei16 s-mac i-run"></span>Run program</button>
+              <div class="bsplit">
+                <button class="sp-main" title="Add operation"><img src="assets/fig-plus.svg" alt=""></button>
+                <button class="sp-menu" title="Add setup, part or operation"><img src="assets/tb-chev.svg" alt=""></button>
+              </div>
+              <button class="tbtn" title="More: Postprocessor, Autorun"><span class="ei ei16 s-mac i-dots"></span></button>
+            </div>
+          </div>
+          <div class="line"></div>
+          <div class="tree" id="tree" role="tree"></div>
+        </div>
+      </section>
+
+      <div class="dock-resizer" id="dockResizer" title="Drag to resize"></div>
+
+      <section class="panel panel-insp" id="panelInsp">
+        <!-- head: the mode combobox (Parameters | Stream editor), then the buttons of the mode -->
+        <div class="ihead">
+          <button class="iswitch" id="inspSwitch" aria-haspopup="listbox" title="Switch the panel"><span>Parameters</span><img src="assets/dd-chev.svg" alt=""></button>
+          <span class="ihspacer"></span>
+          <div class="iacts" data-acts="params"></div>
+          <div class="iacts" data-acts="stream" hidden></div>
+        </div>
+
+        <!-- Parameters: the tabs follow the tree level (machine level here) -->
+        <div class="ibody" data-body="params">
+          <div class="rail" data-rail>
+            <button class="rbtn" data-t="Setup" title="Setup"><span class="ei ei20 s-insp i-p-setup"></span></button>
+            <button class="rbtn active" data-t="Machine setup" title="Machine setup"><span class="ei ei20 s-insp i-p-mach"></span></button>
+            <button class="rbtn" data-t="Part" title="Part"><span class="ei ei20 s-insp i-p-part"></span></button>
+            <button class="rbtn" data-t="Workpiece" title="Workpiece"><span class="ei ei20 s-insp i-p-wp"></span></button>
+            <button class="rbtn" data-t="Fixtures" title="Fixtures"><span class="ei ei20 s-insp i-p-fix"></span></button>
+            <button class="rbtn" data-t="Model" title="Model"><span class="opic"></span></button>
+          </div>
+          <div class="inner">
+            <div class="title-row"><span class="t" data-title>Machine setup</span><span class="tnode" id="inspNode"></span></div>
+            <!-- rows (inspector.js); the label | control divider drags like the tree's -->
+            <div class="iwrap" id="iwrap"><div class="isplit-line"></div><div class="isplit-handle" id="isplit" title="Drag to resize the columns"></div><div class="irows" id="irows"></div></div>
+          </div>
+        </div>
+
+        <!-- Stream editor: bulk edits of the active program, five groups -->
+        <div class="ibody" data-body="stream" hidden>
+          <div class="rail" data-rail>
+            <button class="rbtn active" data-t="Block numbers" title="Block numbers"><span class="opic"></span></button>
+            <button class="rbtn" data-t="Strings" title="Strings"><span class="opic"></span></button>
+            <button class="rbtn" data-t="Skips" title="Skips"><span class="opic"></span></button>
+            <button class="rbtn" data-t="Change register" title="Change register"><span class="opic"></span></button>
+            <button class="rbtn" data-t="Transform" title="Transform"><span class="opic"></span></button>
+          </div>
+          <div class="inner">
+            <div class="title-row"><span class="t" data-title>Block numbers</span></div>
+            <div class="pempty">Bulk edits of the active program: set up, then Apply</div>
+          </div>
+        </div>
+      </section>
+      </div>
+    </aside>
+
+    <!-- ===== NC code column ===== -->
+    <aside class="codecol" id="codecol">
+      <div class="wgrip" id="codeGrip" title="Drag to resize the panel"></div>
+      <!-- collapsed: the file name, or one name per channel (layout.js) -->
+      <div class="cstrip">
+        <button class="pcol" data-col="code"><svg class="ic-min" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4"/><path d="M4 14h6v6"/></svg><svg class="ic-exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M10 20H4v-6"/></svg></button>
+        <div class="vlabels" id="codeLabels"></div>
+      </div>
+      <section class="panel panel-code">
+        <!-- head on the frame, as the inspector's: the program file holds the channels, so its row
+             comes first — the file, then its channels, then the code -->
+          <div class="ptool chead">
+            <button class="pcol" data-col="code"><svg class="ic-min" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4"/><path d="M4 14h6v6"/></svg><svg class="ic-exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M10 20H4v-6"/></svg></button>
+            <button class="tbtn" title="Explorer — NC file management">
+              <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="4" r="1.25"/><circle cx="10.5" cy="4" r="1.25"/><circle cx="5.5" cy="8" r="1.25"/><circle cx="10.5" cy="8" r="1.25"/><circle cx="5.5" cy="12" r="1.25"/><circle cx="10.5" cy="12" r="1.25"/></svg>
+            </button>
+            <button class="fname" title="Switch program"><span class="ptitle" id="fileName">Program file name 1</span><img src="assets/dd-chev.svg" alt=""></button>
+            <div class="tgroup">
+              <button class="tbtn" data-act="undo" title="Undo (Ctrl+Z)"><span class="ei ei20 s-add i-undo"></span></button>
+              <button class="tbtn" data-act="redo" title="Redo (Ctrl+Y)"><span class="ei ei20 s-add i-redo"></span></button>
+              <span class="tdiv"></span>
+              <button class="tbtn" data-act="find" title="Find (Ctrl+F)"><span class="ei ei16 s-st i-search"></span></button>
+              <button class="tbtn" data-act="split" title="Split — create operations from the program">
+                <svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="7.4" width="10" height="1.2" rx=".6"/><circle cx="8" cy="4.2" r="1.2"/><circle cx="8" cy="11.8" r="1.2"/></svg>
+              </button>
+              <button class="tbtn" id="streamBtn" title="Stream editor — bulk edits">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M8.5 3.2c-.9-.6-2.2-.3-2.5 1L4.6 12.2c-.3 1.3-1.6 1.6-2.5 1"/><path d="M4 6.6h4"/><path d="M9.5 9l3.5 4M13 9l-3.5 4"/></svg>
+              </button>
+              <span class="tdiv"></span>
+              <button class="tbtn" title="More: Rename, Replace, Save as, Remove"><span class="ei ei16 s-mac i-dots"></span></button>
+            </div>
+          </div>
+        <!-- channels of a multichannel machine (code.js): Channel 1 | Channel 2 | ⫴ side by side -->
+        <div class="tabs" id="chTabs" role="tablist" hidden></div>
+        <div class="inner">
+          <div class="cpanes" id="cpanes"></div>
+        </div>
+      </section>
+    </aside>
+
+  </div>
+</div>
+<script src="header.js"></script>
+<script src="examples.js"></script>
+<script src="project.js"></script>
+<script src="editor.js"></script>
+<script src="code.js"></script>
+<script src="inspector.js"></script>
+<script src="tree.js"></script>
+<script src="layout.js"></script>
+<script src="viewport.js"></script>
+<script src="sim.js"></script>
+<script src="streamedit.js"></script>
+<script src="touch.js"></script>
+</body>
+</html>

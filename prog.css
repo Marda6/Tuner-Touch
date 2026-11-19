@@ -144,3 +144,6 @@
 .pg-tools.pg-foot{border-bottom:0;}
 .pg-t .pg-track{top:4px;}
 .tk-menu.pg-opst{min-width:calc(380px * var(--kf));}
+/* the foot gives way on a narrow panel (prog.js fitFoot): c1 — Up / Down keep their icons, c2 — Find / Edit too */
+.pg-foot.c1 [data-act="pgup"] > span,.pg-foot.c1 [data-act="pgdn"] > span,.pg-foot.c2 [data-act="find"] > span,.pg-foot.c2 [data-act="edit"] > span{display:none;}
+.pg-foot.c1 [data-act="pgup"],.pg-foot.c1 [data-act="pgdn"],.pg-foot.c2 [data-act="find"],.pg-foot.c2 [data-act="edit"]{padding:0;width:var(--t-btn);}

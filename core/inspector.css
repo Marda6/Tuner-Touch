@@ -1,0 +1,97 @@
+/* ENCY Tuner — Parameters inspector (inspector.js). Rows as ENCY's Inspector Row (Core 1:156):
+   24 high, 1px apart, radius 6; hover fg-8, selected fg-12; label | control split by a divider. */
+
+.title-row .t{flex:0 0 auto;}
+/* the node the tab belongs to: quiet, on the right */
+.tnode{flex:1 1 auto;min-width:0;text-align:right;color:var(--ec-fg-48);font:400 12px/16px var(--ec-font);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ——— the label | control divider (as the tree's halves split): a line that does not scroll,
+   shown while its handle is hovered or dragged; --insp-split is a share, so it stretches ——— */
+/* 60 % to the labels: Tuner's names are long ("Radius compensation mode"), its values short */
+.iwrap{position:relative;flex:1 1 0;min-height:0;display:flex;flex-direction:column;--insp-split:60%;}
+.isplit-line{position:absolute;top:0;bottom:0;left:calc(var(--insp-split) - 1px);width:1px;z-index:5;
+  opacity:0;transition:opacity .12s ease;pointer-events:none;background:var(--ec-fg-32);}
+.iwrap:has(.isplit-handle:hover) .isplit-line,.iwrap.splitting .isplit-line{opacity:1;}
+.isplit-handle{position:absolute;top:0;bottom:0;left:var(--insp-split);width:9px;margin-left:-5px;z-index:6;
+  cursor:col-resize;touch-action:none;}
+
+/* the scroll lane in the inset's right padding, as in the tree */
+.irows{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:1px;overflow:auto;margin-right:-6px;scrollbar-gutter:stable;}
+.irows::-webkit-scrollbar{width:6px;}
+.irows::-webkit-scrollbar-thumb{border-width:0 2px;border-radius:3px;background-color:var(--ec-fg-24);background-clip:content-box;}
+.irows > *{flex:0 0 auto;}
+
+.irow{display:flex;align-items:center;gap:2px;min-height:24px;padding:2px;border-radius:6px;cursor:pointer;}
+.irow:hover{background:var(--ec-fg-8);}
+.irow.sel{background:var(--ec-fg-12);}
+.ilbl{display:flex;align-items:center;flex:0 0 calc(var(--insp-split) - 4px);min-width:0;}
+/* hint "i" (12×20) on hover — its tooltip tells what the parameter does */
+.hint{width:12px;height:20px;flex:0 0 12px;visibility:hidden;}
+.irow:hover .hint,.irow.sel .hint{visibility:visible;}
+.itl{display:flex;align-items:center;flex:1 1 0;min-width:0;}
+.irow .shev{width:12px;height:20px;flex:0 0 12px;transition:transform .12s ease;}
+.irow.shut .shev{transform:rotate(-90deg);}
+.irow .rlabel span{color:var(--ec-fg-96);}
+.irow.head .rlabel span{font-weight:600;}
+/* a parameter that does not apply right now (its switch is off): quiet, not editable */
+.irow.off .rlabel span,.irow.off .v{color:var(--ec-fg-32);}
+.irow.off{cursor:default;}
+.irow.off:hover{background:transparent;}
+
+.ictl{display:flex;align-items:center;justify-content:flex-end;gap:2px;flex:1 1 0;min-width:0;}
+.ictl.between{justify-content:space-between;}
+/* dropdown / input h20: fg-4, radius 4; hover fg-8; open or editing: fg-8 + a 1px fg-16 ring */
+.dropdown,.input{display:flex;align-items:center;flex:1 1 0;min-width:0;height:20px;padding:2px 2px 2px 4px;border-radius:var(--ec-radius);
+  background:var(--ec-fg-4);}
+.dropdown{justify-content:space-between;}
+.irow:not(.off) .dropdown:hover,.irow:not(.off) .input:hover{background:var(--ec-fg-8);}
+.dropdown.dd-open,.input.editing{background:var(--ec-fg-8);box-shadow:inset 0 0 0 1px var(--ec-fg-16);}
+.dropdown .v,.input .v{flex:1 1 0;min-width:0;color:var(--ec-fg-72);font:400 12px/16px var(--ec-font);font-variant-numeric:tabular-nums;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.input .u{flex:0 0 auto;padding:0 2px 0 4px;color:var(--ec-fg-48);font:400 12px/16px var(--ec-font);}
+.dropdown img{width:16px;height:16px;flex:0 0 16px;}
+.input input{flex:1 1 0;min-width:0;padding:0;border:0;outline:none;background:transparent;
+  color:var(--ec-fg-96);font:400 12px/16px var(--ec-font);font-variant-numeric:tabular-nums;}
+/* read-only value and a link-like value that opens a dialog (Workpiece setup, Click to pick) */
+.roval{flex:1 1 0;min-width:0;padding:2px 4px;color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);font-variant-numeric:tabular-nums;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.irow.head .roval{text-align:right;}
+.tgl{width:24px;height:14px;flex:0 0 24px;}
+/* the row menu ⋮ (12×20): hidden at rest, 20 % on the row's hover, full on its own */
+.imore{width:12px;height:20px;flex:0 0 12px;visibility:hidden;opacity:.2;transition:opacity .12s ease;}
+.irow:hover .imore,.irow.sel .imore{visibility:visible;}
+.imore:hover,.imore.dd-open{opacity:1;}
+/* a button at the end of a control (browse for a file…) */
+.rowbtn{width:20px;height:20px;flex:0 0 20px;display:flex;align-items:center;justify-content:center;border-radius:var(--ec-radius);
+  color:var(--ec-fg-56);}
+.rowbtn:hover{background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.rowbtn svg{width:14px;height:14px;}
+.irows .line{margin:4px 0;}
+/* a note under the rows (what a change does) */
+.inote{margin:6px 4px 0;padding:6px 8px;border-radius:var(--ec-radius);background:var(--ec-fg-4);
+  color:var(--ec-fg-56);font:400 12px/16px var(--ec-font);}
+
+/* ——— dropdown list and row menu: an overlay (--pop-bg), rows 24, the current one checked ——— */
+.dd-menu{position:fixed;z-index:1000;min-width:120px;max-height:320px;overflow:auto;padding:2px;border-radius:var(--ec-radius);
+  display:flex;flex-direction:column;gap:1px;background:var(--pop-bg);border:1px solid var(--ec-fg-12);box-shadow:0 6px 20px var(--th-shadow);}
+.dd-opt{display:flex;align-items:center;gap:4px;height:24px;padding:0 8px 0 4px;border-radius:3px;text-align:left;
+  color:var(--ec-fg-72);font:400 12px/16px var(--ec-font);white-space:nowrap;}
+.dd-opt:hover:not(:disabled){background:var(--ec-fg-8);color:var(--ec-fg-96);}
+.dd-opt.cur{color:var(--ec-fg-100);}
+.dd-opt:disabled{color:var(--ec-fg-32);}
+.dd-ck{width:14px;flex:0 0 14px;text-align:center;color:var(--ec-fg-96);}
+
+/* ——— hint tooltip: the parameter's name and what it does ——— */
+.itip{position:fixed;z-index:1000;max-width:280px;padding:6px 8px;border-radius:var(--ec-radius);pointer-events:none;
+  background:var(--pop-bg);border:1px solid var(--ec-fg-12);box-shadow:0 6px 20px var(--th-shadow);}
+.itip b{display:block;color:var(--ec-fg-96);font:600 12px/16px var(--ec-font);}
+.itip span{display:block;margin-top:2px;color:var(--ec-fg-64);font:400 12px/16px var(--ec-font);}
+
+/* the search row under the title (the code panel's Find field and count) */
+.isearch{flex:0 0 24px;display:flex;align-items:center;gap:4px;}
+.isearch[hidden]{display:none;}
+.isearch .ef-count{min-width:0;}
+/* a tab with a match for the search: a dot in the corner of its rail button */
+.rbtn{position:relative;}
+.rbtn.hit::after{content:"";position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:var(--ec-badge);}

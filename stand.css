@@ -49,3 +49,7 @@ body.no-notes .notes{display:none;}
 .notes details{margin:16px 0 0;padding:10px 12px;border-radius:var(--ec-radius-md);background:var(--ec-fg-4);}
 .notes summary{cursor:pointer;color:var(--ec-fg-80);}
 .notes details ol{margin-top:8px;}
+
+/* variant 3: the desktop Tuner prototype (ENCY Core panels) in its touch mode, filling the screen */
+.core-frame{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#0e1010;}
+.core-frame[hidden],.tt[hidden]{display:none !important;}
