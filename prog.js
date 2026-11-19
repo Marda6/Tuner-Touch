@@ -80,22 +80,66 @@
     return '<div class="pg-err"><b>' + esc(t('e_' + type)) + '</b>' + (o ? ' · ' + esc(o.name) + ' · ' + esc(o.tool) : '') +
       '<div>' + esc(t('e_' + type + '_d')) + '</div></div>';
   }
-  function textHTML(p, c){
+  // flat — the variant from Tuner's components: Tuner's editor, one text, an operation's start by its
+  // flag mark and a hairline above it (no headers, no folding)
+  function textHTML(p, c, flat){
     var calc = TT.calculated(p), cls = classify(c.lines), f = calc ? TT.found(c) : {}, starts = {}, sh = shut(c);
     c.ops.forEach(function(o, k){ starts[o.start] = k; });
     var h = '', open = false;
     function begin(k){ if (open) h += '</div></div>'; h += '<div class="pg-sec' + (sh[k] ? ' shut' : '') + '" data-sec="' + k + '">' + opHead(p, c, k) + '<div class="pg-lines">'; open = true; }
     c.lines.forEach(function(l, i){
-      if (i in starts) begin(starts[i]); else if (i === 0) begin(-1);
+      if (!flat){ if (i in starts) begin(starts[i]); else if (i === 0) begin(-1); }
       var m = '';
       if (i in starts) m = mark('flag');
       if (f[i]) m = mark(f[i]);
       else if (calc && i <= c.simTo && cls[i].move) m = mark(cls[i].rapid ? 'idle' : 'ok');
-      h += '<div class="pg-ln' + (i === c.cur ? ' cur' : '') + '" data-i="' + i + '"><span class="pg-mk">' + m + '</span>' +
+      h += '<div class="pg-ln' + (i === c.cur ? ' cur' : '') + (flat && (i in starts) && i > 0 ? ' op0' : '') + '" data-i="' + i + '"><span class="pg-mk">' + m + '</span>' +
         '<span class="pg-tx">' + (calc ? coloured(l, cls[i].k) : syntax(l)) + '</span></div>';
       if (i === c.cur && f[i]) h += errCard(c, i, f[i]);
     });
     return h + (open ? '</div></div>' : '');
+  }
+
+  // ——— the panel of the variant from Tuner's components (spec sect. 4, the draft's left panel):
+  //   Channel 1 | 2 · Split — Operations, Tuner's setup tree as a list (status · name · tool; a tap
+  //   selects it and brings its start up; the status of an operation with errors — Tuner's operation
+  //   status panel) — the program's file ▾ · Open program · Follow — the text with Tuner's marks —
+  //   Page up · Page down · Find · Edit, with captions ———
+  function olRow(p, c, o, k){
+    var st = TT.opStatus(p, c, o);
+    return '<div class="pg-olr' + (k === selOp(c) ? ' sel' : '') + '" data-olr="' + k + '" role="button" style="--c:var(' + o.c + ')">' +
+      '<span class="pg-olr-c"></span><img class="pg-olr-s' + (st === 'err' ? ' err' : '') + '" data-ols="' + k + '" src="assets/tree/' + ST[st] + '.svg" alt="">' +
+      '<b>' + esc(o.name) + '</b><span>' + esc(o.tool) + '</span></div>';
+  }
+  function panelTuner(p, c, vo){
+    var chs = p.channels.length > 1 ? '<div class="pg-seg" role="tablist"><span class="pg-lbl">' + esc(t('chl')) + '</span>' + p.channels.map(function(x, i){
+      return '<div class="pg-seg-b' + (i === p.ch ? ' cur' : '') + '" role="tab" data-ch="' + i + '"><span>' + (i + 1) + '</span></div>';
+    }).join('') + '</div>' : '<span class="pg-one">' + esc(t('ch', {n:1})) + '</span>';
+    return '<div class="pg pg-t">' +
+      '<div class="pg-tools">' + chs + '<span class="tk-sp"></span>' + ui.btn({act:'split', label:t('split_b'), icon:ui.ic('split'), dis:vo}) + '</div>' +
+      '<div class="pg-olh"><span class="cur">' + esc(t('ops_t')) + '</span><span class="dis">' + esc(t('axes_t')) + '</span></div>' +
+      '<div class="pg-ol">' + c.ops.map(function(o, k){ return olRow(p, c, o, k); }).join('') + '</div>' +
+      '<div class="pg-tools pg-file"><button class="pg-dd" data-act="prog" aria-haspopup="menu" aria-label="' + esc(t('program')) + '"><span>' + esc(c.file) + '</span>' + ui.ic('chev') + '</button>' +
+        '<span class="tk-sp"></span>' + ui.btn({act:'openprog', icon:ui.spr('menu', 1, 4), cls:'sq', aria:t('open_prog'), dis:vo}) +
+        ui.btn({act:'follow', label:t('follow'), icon:ui.ic('follow'), cls:c.view.follow ? 'on' : ''}) + '</div>' +
+      '<div class="pg-body"><div class="pg-text">' + textHTML(p, c, true) + '</div><div class="pg-track"><div class="pg-thumb"></div></div></div>' +
+      '<div class="pg-tools pg-foot">' + ui.btn({act:'pgup', label:t('pgUp'), icon:ui.ic('pgUp'), cls:'ghost'}) + ui.btn({act:'pgdn', label:t('pgDn'), icon:ui.ic('pgDn'), cls:'ghost'}) +
+        '<span class="tk-sp"></span>' + ui.btn({act:'find', label:t('find'), icon:ui.spr('status', 3, 7), cls:'ghost'}) +
+        ui.btn({act:'edit', label:t('edit'), icon:ui.spr('add', 2, 15), cls:'ghost', dis:vo}) + '</div></div>';
+  }
+  // Tuner's operation status panel: the errors of one operation, a tap — the machine to that block
+  function opStatusPanel(anchor, p, c, k){
+    var o = c.ops[k], f = TT.found(c);
+    var list = Object.keys(f).map(Number).filter(function(i){ return i >= o.start && i <= o.end; }).sort(function(a, b){ return a - b; });
+    if (!list.length) return false;
+    ui.pop(anchor, '<div class="tk-mh">' + esc(o.name + ' · ' + o.tool) + '</div>' + list.map(function(i){
+      return '<div class="tk-mi" data-ei="' + i + '" role="button">' + mark(f[i]) + '<span><b>' + esc(t('e_' + f[i])) + '</b><small>' + esc(c.lines[i].trim()) + '</small></span></div>';
+    }).join(''), function(e){ var r = e.target.closest('[data-ei]'); if (!r) return; ui.closeMenu(); go(p, +r.getAttribute('data-ei')); }, 'pg-opst');
+    return true;
+  }
+  function pickOp(p, c, k){
+    c.sel = k; c.view.follow = false; render();
+    var ln = text && text.querySelector('[data-i="' + c.ops[k].start + '"]'); if (ln) text.scrollTop = Math.max(0, topOf(ln) - 4);
   }
 
   // ——— render: the whole panel only when its frame changes; a moving machine (cursor, simulated
@@ -109,7 +153,8 @@
     var c = chan(p), vo = TT.viewOnly(), key = p.id + ':' + p.ch;
     // Follow: the machine moved into a folded operation — it unfolds
     if (c.view.follow && lastCur[key] != null && lastCur[key] !== c.cur) openFor(c, c.cur);
-    var sh = [TT.lang(), p.id, p.ch, TT.calculated(p), vo, c.view.follow, Object.keys(shut(c)).sort().join(','), p.channels.length].join('|');
+    var tuner = TT.isTuner();
+    var sh = [TT.lang(), TT.variant(), p.id, p.ch, TT.calculated(p), vo, c.view.follow, tuner ? selOp(c) : Object.keys(shut(c)).sort().join(','), p.channels.length].join('|');
     if (sh === shape){ patch(p, c, key); return; }
     shape = sh;
     if (text && shown) shown.view.scroll = text.scrollTop;
@@ -117,7 +162,7 @@
     // the panel: its tools over the text (fold / unfold all · page up · page down … Find · Edit), then
     // the text. The channel switch and the program's file ▾ sit on the project's row above (top.js):
     // channel → its program is the next link of the chain project → machine → channel
-    host.innerHTML = '<div class="pg">' +
+    host.innerHTML = tuner ? panelTuner(p, c, vo) : '<div class="pg">' +
       '<div class="pg-tools">' + ui.btn({act:'all', icon:ui.ic(anyOpen ? 'shutAll' : 'openAll'), cls:'sq', aria:t(anyOpen ? 'all_shut' : 'all_open')}) +
         ui.btn({act:'pgup', icon:ui.ic('pgUp'), cls:'sq', aria:t('pgUp')}) + ui.btn({act:'pgdn', icon:ui.ic('pgDn'), cls:'sq', aria:t('pgDn')}) +
         '<span class="tk-sp"></span>' + ui.btn({act:'find', label:t('find'), icon:ui.spr('status', 3, 7)}) +
@@ -126,6 +171,8 @@
         '<div class="pg-track"><div class="pg-thumb"></div></div>' +
         (c.view.follow ? '' : ui.btn({act:'follow', label:t('follow'), icon:ui.ic('follow'), cls:'pg-follow'})) + '</div></div>';
     text = host.querySelector('.pg-text'); shown = c;
+    var ol = host.querySelector('.pg-ol');   // the operations list (Tuner's variant): a finger scrolls it; the selected one in view
+    if (ol){ ui.dragScroll(ol, 'y'); var so = ol.querySelector('.pg-olr.sel'); if (so && (so.offsetTop < ol.scrollTop || so.offsetTop + so.offsetHeight > ol.scrollTop + ol.clientHeight)) ol.scrollTop = so.offsetTop - ol.clientHeight / 2 + so.offsetHeight / 2; }
     ui.dragScroll(text, 'y', letGo);
     text.addEventListener('scroll', function(){ if (shown) shown.view.scroll = text.scrollTop; thumb(); stuck(); moving(); });
     // where to stand: the kept scroll of this channel; with Follow on, a moved machine comes into view
@@ -133,7 +180,7 @@
     if (c.view.follow && lastCur[key] != null && lastCur[key] !== c.cur) reveal(c.cur);
     lastCur[key] = c.cur;
     dyn = {key:key, cur:c.cur, simTo:c.simTo, sel:selOp(c), errs:errKey(c)};
-    thumb(); stuck();
+    sizeList(); thumb(); stuck();
   }
   // the machine moved: the current block, the marks of the newly simulated blocks, the error card, the
   // operations' statuses — in place
@@ -156,6 +203,11 @@
     var ln = text.querySelector('[data-i="' + c.cur + '"]'); if (ln) ln.classList.add('cur');
     var card = text.querySelector('.pg-err'); if (card) card.remove();
     if (ln && f[c.cur]) ln.insertAdjacentHTML('afterend', errCard(c, c.cur, f[c.cur]));
+    // the operations list (the variant from Tuner's components): status and the selected one
+    host.querySelectorAll('.pg-olr').forEach(function(r){
+      var k = +r.getAttribute('data-olr'), st = TT.opStatus(p, c, c.ops[k]), img = r.querySelector('.pg-olr-s');
+      img.src = 'assets/tree/' + ST[st] + '.svg'; img.classList.toggle('err', st === 'err'); r.classList.toggle('sel', k === selOp(c));
+    });
     // operations: status and the selected one
     text.querySelectorAll('.pg-op').forEach(function(h){
       var k = +h.getAttribute('data-op'); if (k < 0) return;
@@ -183,7 +235,7 @@
   // bottom): then at about a third of the height. A tap on a visible block never scrolls.
   function reveal(i){
     if (!text) return; var ln = text.querySelector('[data-i="' + i + '"]'); if (!ln || !ln.offsetParent) return;
-    var y = topOf(ln) - text.scrollTop, rowH = ln.offsetHeight, pin = 48 * (parseFloat(getComputedStyle(host).getPropertyValue('--kf')) || 1);
+    var y = topOf(ln) - text.scrollTop, rowH = ln.offsetHeight, pin = TT.isTuner() ? 0 : 48 * (parseFloat(getComputedStyle(host).getPropertyValue('--kf')) || 1);
     if (y >= pin && y + rowH * 2 <= text.clientHeight - rowH) return;
     text.scrollTop = Math.max(0, topOf(ln) - text.clientHeight * 0.32);
   }
@@ -238,13 +290,18 @@
     if ((b = e.target.closest('[data-act]'))){
       var a = b.getAttribute('data-act');
       if (a === 'prog') progMenu(b, p, c);
+      else if (a === 'follow' && TT.isTuner() && c.view.follow){ c.view.follow = false; render(); }   // Tuner's toggle: on / off
       else if (a === 'follow'){ c.view.follow = true; openFor(c, c.cur); render(); reveal(c.cur); }
+      else if (a === 'split') askSplit(p);
+      else if (a === 'openprog') ui.toast(t('t_soon', {what:t('w_openProg'), n:7}), 'var(--ec-fg-48)');
       else if (a === 'find') ui.toast(t('t_soon', {what:t('w_find'), n:6}), 'var(--ec-fg-48)');
       else if (a === 'edit') ui.toast(t('t_soon', {what:t('w_edit'), n:6}), 'var(--ec-fg-48)');
       else if (a === 'pgup' || a === 'pgdn'){ letGo(); text.scrollBy({top:(a === 'pgup' ? -1 : 1) * (text.clientHeight - 96), behavior:'smooth'}); }
       else if (a === 'all') foldAll(c);
       return;
     }
+    if ((b = e.target.closest('[data-ols]')) && opStatusPanel(b, p, c, +b.getAttribute('data-ols'))) return;
+    if ((b = e.target.closest('[data-olr]'))){ pickOp(p, c, +b.getAttribute('data-olr')); return; }
     if ((b = e.target.closest('[data-op]'))){ fold(c, +b.getAttribute('data-op'), b.classList.contains('stuck')); return; }
     if ((b = e.target.closest('.pg-ln'))) go(p, +b.getAttribute('data-i'));
   });
@@ -266,11 +323,11 @@
   }
 
   // ——— long press ———
-  ui.longPress(host, '.pg-op, .pg-ln', function(el, pt){
+  ui.longPress(host, '.pg-op, .pg-olr, .pg-ln', function(el, pt){
     var p = TT.active(); if (!p) return;
     var c = chan(p);
-    if (el.classList.contains('pg-op')){
-      var k = +el.getAttribute('data-op'); if (k < 0) return;
+    if (el.classList.contains('pg-op') || el.classList.contains('pg-olr')){
+      var k = +(el.getAttribute('data-op') || el.getAttribute('data-olr')); if (k < 0) return;
       var o = c.ops[k];
       ui.menu(pt, [{key:'this', label:t('op_sim')}, {key:'upto', label:t('op_upto')}], o.name + ' · ' + o.tool).then(function(r){
         if (r === 'this') simulate(p, o.end); else if (r === 'upto') simulate(p, o.start);
@@ -292,10 +349,13 @@
     ]).then(function(k){
       if (k === 'open') ui.toast(t('t_soon', {what:t('w_openProg'), n:7}), 'var(--ec-fg-48)');
       else if (k === 'progAs') ui.toast(t('t_soon', {what:t('w_progAs'), n:7}), 'var(--ec-fg-48)');
-      else if (k === 'split') ui.ask({title:t('q_split'), text:t('q_split_d'), buttons:[
-          {key:'split', label:t('b_split'), cls:'danger', left:true}, {key:'cancel', label:t('b_cancel')}]}).then(function(r){
-        if (r === 'split'){ TT.split(p.id); ui.toast(t('t_split'), 'var(--ec-amber)'); }
-      });
+      else if (k === 'split') askSplit(p);
+    });
+  }
+  function askSplit(p){
+    ui.ask({title:t('q_split'), text:t('q_split_d'), buttons:[
+        {key:'split', label:t('b_split'), cls:'danger', left:true}, {key:'cancel', label:t('b_cancel')}]}).then(function(r){
+      if (r === 'split'){ TT.split(p.id); ui.toast(t('t_split'), 'var(--ec-amber)'); }
     });
   }
 
@@ -322,6 +382,19 @@
     reveal(line);
   });
   TT.on('lang', function(){ shape = ''; render(); });
+  TT.on('variant', function(){ shape = ''; render(); });
   TT.on('viewonly', function(){ shape = ''; render(); });
-  TT.on('resize', thumb);
+  // the operations list (Tuner's variant) gives way to the text: 6 rows, down to 4 when the text would show
+  // fewer than 8 blocks (spec sect. 4: "not fewer than 4 rows in the operations list, the rest — the NC text")
+  function sizeList(){
+    var ol = host.querySelector('.pg-ol'), pg = host.querySelector('.pg'), body = host.querySelector('.pg-body'); if (!ol || !pg || !body) return;
+    var r0 = ol.querySelector('.pg-olr'); if (!r0) return;
+    var row = r0.offsetHeight, code = (host.querySelector('.pg-ln') || {}).offsetHeight || 32;
+    ol.style.maxHeight = '';
+    var fixed = pg.clientHeight - body.offsetHeight - ol.offsetHeight;
+    var room = pg.clientHeight - fixed - 8 * code;
+    ol.style.maxHeight = Math.max(4 * row, Math.min(6 * row, room)) + 'px';
+    thumb();
+  }
+  TT.on('resize', function(){ sizeList(); thumb(); });
 })();

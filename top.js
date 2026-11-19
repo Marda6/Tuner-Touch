@@ -19,10 +19,11 @@
   function renderTop(){
     var p = TT.active(), vo = TT.viewOnly();
     var errs = p ? p.channels.map(function(c){ return Object.keys(TT.found(c)).length; }) : [];
-    var shape = [TT.lang(), vo, p ? [p.id, p.ch, p.channels.length, errs.join(','), p.dirty, p.machine, p.channels[p.ch].file].join(':') : '-'].join('|');
-    if (shape === topShape) return;
+    var shape = [TT.lang(), TT.variant(), vo, p ? [p.id, p.ch, p.channels.length, errs.join(','), p.errors, p.state, p.dirty, p.machine, p.channels[p.ch].file].join(':') : '-'].join('|');
+    if (shape === topShape){ pct(p); return; }
     topShape = shape;
     if (!p){ top.innerHTML = ''; return; }
+    if (TT.isTuner()){ renderTopTuner(p, vo); return; }
     // Channel 1 | 2 | 3 — one switch, its title inside the tray (a multichannel machine only); a channel
     // with errors found carries a small red square in its corner — the count is on the console, for the shown channel
     var chs = p.channels.length > 1 ? DIV + '<div class="pg-seg" role="tablist"><span class="pg-lbl">' + esc(t('chl')) + '</span>' + p.channels.map(function(x, i){
@@ -41,6 +42,33 @@
         ui.btn({act:'savemenu', icon:ui.spr('menu', 7, 1), cls:p.dirty ? 'on' : '', dis:vo, aria:t('save') + ' ▾'}) + '</div>' +
         (vo ? ui.btn({act:'lock', label:t('viewOnly'), icon:ui.ic('lock'), cls:'on'})
             : ui.btn({act:'lock', icon:ui.ic('lockOpen'), cls:'ghost sq', aria:t('viewOnly')})) + '</div>';
+  }
+
+  // the variant from Tuner's components (spec sect. 4 — the top bar of the draft): machine and control …
+  // the errors badge (a tap — the first error) | the program's state and "▶ Calculate" (always here, coloured
+  // when a calculation is needed; while calculating — the percentage, a bar and Cancel) | Save ▾ · View only.
+  // The channels and the program's file sit on the program panel, as in the spec (prog.js)
+  function renderTopTuner(p, vo){
+    var s = p.state, cls = s === 'needs' ? 'amber' : s === 'calculating' ? 'busy' : (s === 'simulating' || s === 'simulated') ? 'green' : '';
+    var calc = s === 'calculating' ? ui.btn({act:'stopcalc', label:t('cancel'), icon:ui.ic('stop')})
+             : ui.btn({act:'calc', label:t('calc'), icon:ui.spr('macros', 1, 1), cls:s === 'needs' ? 'pri' : '', dis:vo});
+    top.innerHTML = '<div class="tt-mach"><b>' + esc(p.machine) + '</b><span>' + esc(p.control) + '</span></div>' +
+      '<span class="tk-sp"></span>' +
+      (p.errors > 0 ? ui.btn({act:'errors', label:t('errors', p.errors), icon:ui.spr('status', 1, 9), cls:'tk-badge'}) + DIV : '') +
+      '<div class="tk-state ' + cls + '"><span class="tk-st-l"><span data-pct-text>' + esc(t('st_' + s, {p:Math.floor(p.pct || 0)})) + '</span>' +
+        (s === 'calculating' ? '<i data-pct-bar style="--p:' + (p.pct || 0) + '%"></i>' : '') + '</span>' + calc + '</div>' + DIV +
+      '<div class="tt-grp"><div class="tk-split" data-split="save">' +
+        ui.btn({act:'save', label:t('save'), icon:ui.spr('menu', 1, 5), cls:p.dirty ? 'on' : '', dis:vo}) +
+        ui.btn({act:'savemenu', icon:ui.spr('menu', 7, 1), cls:p.dirty ? 'on' : '', dis:vo, aria:t('save') + ' ▾'}) + '</div>' +
+        (vo ? ui.btn({act:'lock', label:t('viewOnly'), icon:ui.ic('lock'), cls:'on'})
+            : ui.btn({act:'lock', icon:ui.ic('lockOpen'), cls:'ghost sq', aria:t('viewOnly')})) + '</div>';
+  }
+  // a running calculation: its words and bar change in place
+  function pct(p){
+    if (!p || p.state !== 'calculating' || !TT.isTuner()) return;
+    var tx = top.querySelector('[data-pct-text]'), pb = top.querySelector('[data-pct-bar]');
+    if (tx) tx.textContent = t('st_calculating', {p:Math.floor(p.pct)});
+    if (pb) pb.style.setProperty('--p', p.pct + '%');
   }
 
   // ——— level 1: the window and its projects ———
@@ -122,6 +150,8 @@
     var a = b.getAttribute('data-act');
     if (a === 'prog') TT.emit('progMenu', b);
     else if (a === 'errors') TT.emit('firstError');
+    else if (a === 'calc') TT.calc(p.id);
+    else if (a === 'stopcalc') TT.stopCalc(p.id);
     else if (a === 'lock') TT.setViewOnly(!TT.viewOnly());
     else if (a === 'save') save(p);
     else if (a === 'savemenu') saveMenu(b, p);
@@ -159,5 +189,6 @@
   TT.on('active', function(){ all(); showCurrent(); edges(); });
   TT.on('lang', function(){ topShape = tabsShape = ''; all(); });
   TT.on('viewonly', function(){ topShape = ''; renderTop(); });
+  TT.on('variant', function(){ topShape = ''; renderTop(); });
   TT.on('resize', function(){ showCurrent(); edges(); });
 })();

@@ -20,13 +20,13 @@ window.TT = (function(){
     return n + ' ' + (a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many); }
   var STR = {
     en: {
-      s_this:'This op', s_upto:'Up to op', s_end:'To end', s_errs:'Errors', s_noErr:'No errors', s_errAt:'{i} / {n}', s_prev:'Previous error', s_next:'Next error',
+      s_this:'This op', s_nextE:'Next error', s_prevE:'Prev. error', s_stop:'Stop', s_upto:'Up to op', s_end:'To end', s_errs:'Errors', s_noErr:'No errors', s_errAt:'{i} / {n}', s_prev:'Previous error', s_next:'Next error',
       s_checks:'Checks', s_reset:'Reset', s_back:'Back', s_play:'Play', s_pause:'Pause', s_step:'Step', s_speed:'Speed',
       c_holder:'Holder collisions', c_machine:'Machine collisions', c_gouge:'Gouges', c_stopErr:'Stop on error', c_smooth:'Smooth motion',
       c_smooth_d:'Off — block by block', t_end:'End of program · {name}', t_noNext:'No more errors ahead', t_noPrev:'No errors before this block',
       t_reset:'Back to the start — the stock is reset', tl_aria:'Simulation timeline',
       pg_start:'Program start', all_shut:'Fold all operations', all_open:'Unfold all operations',
-      chl:'Channel', program:'Program', ch:'Channel {n}', follow:'Follow', find:'Find', edit:'Edit', pgUp:'Page up', pgDn:'Page down', ops_t:'Operations',
+      chl:'Channel', program:'Program', ch:'Channel {n}', follow:'Follow', find:'Find', edit:'Edit', pgUp:'Page up', pgDn:'Page down', ops_t:'Operations', axes_t:'Axes', open_prog:'Open program', split_b:'Split',
       m_open:'Open program…', m_open_d:'Replace this channel’s program with a file', m_split:'Split…', m_split_d:'Build the operations of all channels again from the text',
       op_sim:'Simulate this operation', op_upto:'Simulate up to this operation', ln_upto:'Simulate up to this line',
       q_split:'Replace operations and tools from the NC text?', q_split_d:'Tuner deletes the operations of all channels with their tools and builds them again by tool changes, work offsets, comments and spindle. The simulation result is lost — the project will need calculation.',
@@ -60,18 +60,18 @@ window.TT = (function(){
       u_calc:'Calculator', u_logs:'System logs', u_tools:'Tools', u_interp:'Interpreter manager',
       z_left:'Program', z_left_d:'channels · operations inside the NC text · edit and find', z_3d:'3D view', z_3d_d:'gestures · view plates · visibility · Verify Compare',
       z_tl:'Timeline', z_bar:'Simulation console', blk:'block {n}',
-      v_rotate:'Rotate', v_pan:'Pan', v_zoom:'Zoom', v_fit:'Fit', v_iso:'Iso', v_top:'Top', v_front:'Front', v_right:'Right', v_views:'View', v_left:'Left', v_back:'Back', v_bottom:'Bottom', v_home:'Home — Iso, fitted', v_ccw:'Turn 90° left', v_cw:'Turn 90° right',
+      v_rotate:'Rotate', v_pan:'Pan', v_zoom:'Zoom', v_fit:'Fit', v_iso:'Iso', v_top:'Top', v_front:'Front', v_right:'Right', v_views:'View', v_turn:'Cutaway', v_turn_3d:'whole', v_turn_q:'a quarter away', v_turn_h:'a half away', v_left:'Left', v_back:'Back', v_bottom:'Bottom', v_home:'Home — Iso, fitted', v_ccw:'Turn 90° left', v_cw:'Turn 90° right',
       o_part:'Part', o_stock:'Stock', o_result:'Result', o_holder:'Holder', o_tool:'Tool', o_fixture:'Fixture', o_machine:'Machine', o_path:'Toolpath',
       o_verify:'Verify Compare', o_vis:'Visibility', vc_title:'Deviation from the part', vc_rest:'Rest', vc_ok:'In tolerance', vc_gouge:'Gouge'
     },
     ru: {
-      s_this:'Текущая', s_upto:'До текущей', s_end:'До конца', s_errs:'Ошибки', s_noErr:'Ошибок нет', s_errAt:'{i} / {n}', s_prev:'Предыдущая ошибка', s_next:'Следующая ошибка',
+      s_this:'Текущая', s_nextE:'След. ошибка', s_prevE:'Пред. ошибка', s_stop:'Стоп', s_upto:'До текущей', s_end:'До конца', s_errs:'Ошибки', s_noErr:'Ошибок нет', s_errAt:'{i} / {n}', s_prev:'Предыдущая ошибка', s_next:'Следующая ошибка',
       s_checks:'Проверки', s_reset:'Сброс', s_back:'Назад', s_play:'Пуск', s_pause:'Пауза', s_step:'Шаг', s_speed:'Скорость',
       c_holder:'Столкновения державки', c_machine:'Столкновения узлов станка', c_gouge:'Зарезы', c_stopErr:'Остановка на ошибке', c_smooth:'Плавное движение',
       c_smooth_d:'Выключено — по кадрам', t_end:'Конец программы · {name}', t_noNext:'Дальше ошибок нет', t_noPrev:'Раньше ошибок нет',
       t_reset:'В начало — заготовка сброшена', tl_aria:'Шкала моделирования',
       pg_start:'Начало программы', all_shut:'Свернуть все операции', all_open:'Развернуть все операции',
-      chl:'Канал', program:'Программа', ch:'Канал {n}', follow:'Следить', find:'Найти', edit:'Править', pgUp:'Страница вверх', pgDn:'Страница вниз', ops_t:'Операции',
+      chl:'Канал', program:'Программа', ch:'Канал {n}', follow:'Следить', find:'Найти', edit:'Править', pgUp:'Страница вверх', pgDn:'Страница вниз', ops_t:'Операции', axes_t:'Оси', open_prog:'Открыть программу', split_b:'Split',
       m_open:'Открыть программу…', m_open_d:'Заменить программу этого канала файлом', m_split:'Split…', m_split_d:'Построить операции всех каналов заново по тексту',
       op_sim:'Моделировать эту операцию', op_upto:'Моделировать до этой операции', ln_upto:'Моделировать до этой строки',
       q_split:'Заменить операции и инструменты по тексту УП?', q_split_d:'Tuner удалит операции всех каналов вместе с инструментами и построит их заново — по смене инструмента, системы координат, комментариям и шпинделю. Результат моделирования пропадёт, проекту понадобится расчёт.',
@@ -105,7 +105,7 @@ window.TT = (function(){
       u_calc:'Калькулятор', u_logs:'Журнал', u_tools:'Инструменты', u_interp:'Менеджер интерпретаторов',
       z_left:'Программа', z_left_d:'каналы · операции внутри текста УП · правка и поиск', z_3d:'3D', z_3d_d:'жесты · плашки вида · видимость · Verify Compare',
       z_tl:'Шкала моделирования', z_bar:'Пульт моделирования', blk:'блок {n}',
-      v_rotate:'Вращать', v_pan:'Сдвигать', v_zoom:'Масштаб', v_fit:'Вписать', v_iso:'Изо', v_top:'Сверху', v_front:'Спереди', v_right:'Справа', v_views:'Вид', v_left:'Слева', v_back:'Сзади', v_bottom:'Снизу', v_home:'Домой — изо, вписать', v_ccw:'Повернуть на 90° влево', v_cw:'Повернуть на 90° вправо',
+      v_rotate:'Вращать', v_pan:'Сдвигать', v_zoom:'Масштаб', v_fit:'Вписать', v_iso:'Изо', v_top:'Сверху', v_front:'Спереди', v_right:'Справа', v_views:'Вид', v_turn:'Вырез', v_turn_3d:'целиком', v_turn_q:'без четверти', v_turn_h:'половина', v_left:'Слева', v_back:'Сзади', v_bottom:'Снизу', v_home:'Домой — изо, вписать', v_ccw:'Повернуть на 90° влево', v_cw:'Повернуть на 90° вправо',
       o_part:'Деталь', o_stock:'Заготовка', o_result:'Результат', o_holder:'Державка', o_tool:'Инструмент', o_fixture:'Оснастка', o_machine:'Станок', o_path:'Траектория',
       o_verify:'Verify Compare', o_vis:'Видимость', vc_title:'Отклонение от детали', vc_rest:'Остаток', vc_ok:'В допуске', vc_gouge:'Зарез'
     }
@@ -119,6 +119,12 @@ window.TT = (function(){
     return s.replace(/\{(\w+)\}/g, function(m, x){ return p && p[x] != null ? p[x] : m; });
   }
   function setLang(l){ lang = l; keep('touch.v2.lang', l); emit('lang', l); }
+  // the variant on the stand (Ruslan, 2026-11-19): 'design' — the new design; 'tuner' — the spec's layout
+  // built from the components Tuner already has, adapted to a finger. Same data, simulation and 3D
+  var variant = load('touch.v2.variant', 'design');
+  function markVariant(){ var r = document.getElementById('tt'); if (r) r.classList.toggle('v-tuner', variant === 'tuner'); }
+  function setVariant(v){ variant = v; keep('touch.v2.variant', v); markVariant(); emit('variant', v); }
+  markVariant();
 
   // ——— projects ———
   // state: needs · calculating · calculated · simulating · paused · simulated
@@ -229,6 +235,7 @@ window.TT = (function(){
   return {
     on:on, emit:emit, t:t, load:load, keep:keep,
     lang:function(){ return lang; }, setLang:setLang,
+    variant:function(){ return variant; }, setVariant:setVariant, isTuner:function(){ return variant === 'tuner'; },
     list:function(){ return list; }, get:get, active:active, select:select, set:set, remove:remove, reset:reset, openDemo:openDemo,
     calc:calc, stopCalc:stopCalc, save:save,
     calculated:calculated, found:found, recount:recount, clearSim:clearSim, resetSim:resetSim, opStatus:opStatus, opAt:opAt, goLine:goLine, split:split,

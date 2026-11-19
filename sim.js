@@ -127,7 +127,7 @@
     var list = a ? errs(a.c) : [], pos = a ? list.filter(function(i){ return i <= a.c.cur; }).length : 0;
     var atStart = !a || a.c.cur <= 0, atEnd = !a || a.c.cur >= last(a.c), fresh = !a || a.p.channels.every(function(c){ return c.simTo < 0 && c.cur === 0; });
     var state = a ? a.p.state : '-';
-    var sh = [TT.lang(), a ? a.p.id + ':' + a.p.ch : '-', state, list.join(','), pos, a && list.indexOf(a.c.cur), atStart, atEnd, fresh].join('|');
+    var sh = [TT.lang(), TT.variant(), a ? a.p.id + ':' + a.p.ch : '-', state, list.join(','), pos, a && list.indexOf(a.c.cur), atStart, atEnd, fresh].join('|');
     if (sh === shape){ pct(a); return; }
     shape = sh;
     // ‹ — an error found behind the machine; › — one found ahead. One error, or the last one — › is off: there
@@ -135,6 +135,28 @@
     var prevOk = calc && list.some(function(i){ return a && i < a.c.cur; });
     var nextOk = calc && list.some(function(i){ return i > a.c.cur; });
     var DIV = '<span class="tk-vdiv"></span>';
+    // the variant from Tuner's components: Tuner's simulation panel in its order (spec sect. 3) — This op ·
+    // Up to op · To end | Next error · Previous error | Checks | Stop (the red square — to the start, the
+    // workpiece reset) · Back · Play / Pause · Step | speed to the right edge. Every key with its caption;
+    // Calculate and the errors' count are on the top bar (top.js)
+    if (TT.isTuner()){
+      bar.innerHTML = '<div class="sm sm-t">' +
+        B('more', '', ui.spr('macros', 1, 5), 'sm-more', !calc, t('s_this') + ' · ' + t('s_upto') + ' · ' + t('s_end')) +
+        '<div class="sm-g">' + B('this', t('s_this'), '<img src="assets/sim/scope-current.svg" alt="">', '', !calc) +
+          B('upto', t('s_upto'), '<img src="assets/sim/scope-tocur.svg" alt="">', '', !calc) +
+          B('end', t('s_end'), '<img src="assets/sim/scope-all.svg" alt="">', '', !calc || atEnd) + '</div>' + DIV +
+        B('next', t('s_nextE'), ui.ic('chevR'), '', !nextOk) + B('prev', t('s_prevE'), ui.ic('chevL'), '', !prevOk) + DIV +
+        B('checks', t('s_checks'), '<img src="assets/sim/st-stop.svg" alt="">') + DIV +
+        B('reset', t('s_stop'), ui.ic('resetSq'), 'sm-reset', !calc || fresh) +
+        B('back', t('s_back'), ui.ic('stepB'), '', atStart) +
+        B('play', t(run ? 's_pause' : 's_play'), ui.spr('macros', 1, run ? 3 : 1), calc ? 'pri' : '', !calc || (atEnd && !run), '', t(run ? 's_play' : 's_pause')) +
+        B('step', t('s_step'), ui.ic('stepF'), '', !calc || atEnd) + DIV +
+        '<div class="sm-speed" style="--v:' + speed + '%" role="slider" aria-label="' + t('s_speed') +
+          '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + speed + '"><i></i><span>' + t('s_speed') + '</span></div>' +
+        '</div>';
+      compactTuner();
+      return;
+    }
     bar.innerHTML = '<div class="sm">' +
       // ——— left, packed against the left edge: fast simulation | Reset · Calculate, right before Play:
       // Calculate → Play, Calculate between Reset and Back (Reset away from them — rule 6.10). The green
@@ -189,6 +211,12 @@
     if (over() || aside()) sm.classList.add('eq');
     ['k1', 'c1', 'c2', 'c3', 'c4'].forEach(function(c){ if (over()) sm.classList.add(c); });
   }
+  // Tuner's panel gives way the same way: fast simulation into ⋯, then the captions of the rarer keys
+  function compactTuner(){
+    var sm = bar.querySelector('.sm'); if (!sm) return;
+    sm.classList.remove('c1', 'c2', 'c3');
+    ['c1', 'c2', 'c3'].forEach(function(c){ if (sm.scrollWidth > sm.clientWidth + 1) sm.classList.add(c); });
+  }
   function fastMenu(b){
     ui.menu(b, [{key:'this', icon:'<img src="assets/sim/scope-current.svg" alt="">', label:t('s_this')},
                 {key:'upto', icon:'<img src="assets/sim/scope-tocur.svg" alt="">', label:t('s_upto')},
@@ -204,7 +232,7 @@
     else if (a === 'errs'){ var s3 = act(), l3 = s3 ? errs(s3.c) : []; if (l3.length === 1) jump(l3[0]); else errList(b); }
     else if (a === 'prev') prevErr();
     else if (a === 'reset') reset();
-    else if (a === 'checks') checksPanel(b);
+    else if (a === 'checks'){ if (TT.isTuner()) checksWindow(b); else checksPanel(b); }
     else if (a === 'more') fastMenu(b);
     else if (a === 'calc'){ var s1 = act(); if (s1){ stopTimer(); TT.calc(s1.p.id); } }
     else if (a === 'stopcalc'){ var s2 = act(); if (s2) TT.stopCalc(s2.p.id); }
@@ -278,6 +306,22 @@
       if (k === 'smooth' && timer) restart();
     }, 'sm-checks');
   }
+  // the variant from Tuner's components: Tuner's "Checks and Stops" window — rows of switches, the
+  // whole 56 row is the target (Smooth sits here per the spec, sect. 3)
+  function checksWindow(anchor){
+    var ch = TT.checks();
+    ui.pop(anchor, '<div class="tk-mh">' + t('s_checks') + '</div>' + TILES.map(function(r){
+      return '<div class="tk-mi" role="switch" aria-checked="' + !!ch[r[0]] + '" data-ck="' + r[0] + '">' +
+        (r[1] ? '<img src="assets/sim/' + r[1] + '.svg" alt="">' : SMOOTH) +
+        '<span><b>' + t('c_' + r[0]) + '</b>' + (r[0] === 'smooth' ? '<small>' + t('c_smooth_d') + '</small>' : '') + '</span>' +
+        '<i class="tk-sw' + (ch[r[0]] ? ' on' : '') + '"></i></div>';
+    }).join(''), function(e){
+      var el = e.target.closest('[data-ck]'); if (!el) return;
+      var k = el.getAttribute('data-ck'), v = !TT.checks()[k];
+      TT.setCheck(k, v); el.querySelector('.tk-sw').classList.toggle('on', v); el.setAttribute('aria-checked', v);
+      if (k === 'smooth' && timer) restart();
+    }, 'sm-checks-w');
+  }
 
   // ——— the timeline ———
   var tlShape = '', segs = [];
@@ -345,6 +389,7 @@
   TT.on('projects', all);
   TT.on('active', function(){ stopTimer(); all(); });
   TT.on('lang', function(){ shape = tlShape = ''; all(); });
-  TT.on('resize', function(){ tlShape = ''; renderTl(); compact(); });
+  TT.on('resize', function(){ tlShape = ''; renderTl(); if (TT.isTuner()) compactTuner(); else compact(); });
+  TT.on('variant', function(){ shape = tlShape = ''; all(); });
   TT.sim = {play:play, pause:pause, jump:jump};
 })();

@@ -26,6 +26,7 @@
     document.getElementById('vFont').textContent = s.font; document.getElementById('vIcons').textContent = s.icons;
     document.querySelectorAll('[data-res]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-res') === res); });
     document.querySelectorAll('[data-lang]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lang') === TT.lang()); });
+    document.querySelectorAll('[data-var]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-var') === TT.variant()); });
     document.getElementById('notesBtn').classList.toggle('on', notesOn);
     TT.emit('resize');
   }
@@ -41,6 +42,7 @@
     var b = e.target.closest('button'); if (!b) return;
     if (b.hasAttribute('data-res')){ res = b.getAttribute('data-res'); TT.keep('touch.res', res); }
     else if (b.hasAttribute('data-lang')){ TT.setLang(b.getAttribute('data-lang')); }
+    else if (b.hasAttribute('data-var')){ TT.setVariant(b.getAttribute('data-var')); renderNotes(); }
     else if (b.hasAttribute('data-step')){
       var p = b.getAttribute('data-step').split(':'), s = size(), k = p[0], lim = k === 'font' ? [14, 24] : [24, 48];
       s[k] = Math.max(lim[0], Math.min(lim[1], s[k] + +p[1])); sizes[res] = s; TT.keep('touch.v2.sizes', sizes);
@@ -55,7 +57,17 @@
   var STATES = [['needs', 'Нужен расчёт'], ['calculated', 'Рассчитан'], ['simulating', 'Моделирование'], ['paused', 'Пауза'], ['simulated', 'Промоделирован']];
   function renderNotes(){
     var p = TT.active();
-    notes.innerHTML =
+    notes.innerHTML = (TT.isTuner() ?
+      '<h2>Вариант · из компонентов Tuner</h2>' +
+      '<p class="lead">Раскладка ТЗ (черновик Владимира), собранная из того, что в Tuner уже есть, под палец: те же данные, моделирование и 3D, что у нового дизайна, — переключатель «Вариант» сверху. Нужен, чтобы сравнивать два подхода на одном стенде.</p>' +
+      '<h3>Что взято из Tuner</h3><ul>' +
+      '<li><b>Вкладки проектов и окно</b> — панель проектов Tuner.</li>' +
+      '<li><b>Верхняя полоса по ТЗ</b>: станок и стойка … значок ошибок (касание — первая ошибка) | состояние и «Рассчитать» (выделена, когда нужен расчёт; идёт расчёт — проценты и «Отмена») | «Сохранить ▾» · «Только просмотр».</li>' +
+      '<li><b>Слева</b>: каналы и «Split» (команда Split Tuner) · «Операции» — дерево наладки Tuner списком: статус, имя, инструмент; касание — операция выбрана, текст у её начала; значок ошибки — панель статуса операции Tuner со списком её ошибок · файл программы ▾ (список программ канала), «Открыть программу», «Следить» · текст УП — редактор Tuner с колонкой отметок, начало операции — флажок · «Страница ↑», «Страница ↓», «Найти», «Править». В списке операций 6 строк, при крупных настройках — до 4 (ТЗ), остальное — тексту.</li>' +
+      '<li><b>Пульт</b> — панель моделирования Tuner в её порядке: «Текущая · До текущей · До конца» | «След. ошибка · Пред. ошибка» | «Проверки» — окно Checks and Stops с переключателями | «Стоп» (в начало со сбросом), «Назад», «Пуск», «Шаг» | скорость до правого края. У всех клавиш подписи.</li>' +
+      '<li><b>3D</b>: клавиши вида по ТЗ с подписями (режим пальца, «Вписать», изо, сверху, спереди, справа); «Вырез» — режим тел вращения Tuner 3D / ¾ / ½; видимость и Verify Compare — панели Tuner.</li></ul>' +
+      '<h3>Нового и в этом варианте</h3><ul><li>Жесты и режим одного пальца, подлёт камеры к месту ошибки — их требует ТЗ, в Tuner под мышь этого нет.</li><li>Размеры под палец: кнопки 44, клавиши пульта 56, строки 48.</li></ul>' +
+      '<h3>Чего здесь нет, в отличие от нового дизайна</h3><ul><li>Шкалы моделирования под 3D — в Tuner её нет (в ТЗ она есть).</li><li>Операций внутри текста, счётчика и списка ошибок на пульте, кубика вида, автоматического выреза у ошибки в расточке.</li><li>На 1280 при шрифте 24 и значках 48 тексту УП остаётся 3 строки — раскладка ТЗ тяжелее по высоте.</li></ul>' : '') +
       '<h2>Блок 4 · 3D</h2>' +
       '<p class="lead">3D на three.js. Сцена — заменитель станка, построенный из текста УП показанного канала: инструмент стоит в кадре станка и едет за «Пуском»; результат обработки — то, что срезали рабочие ходы до промоделированного кадра; деталь — все ходы без кадров с зарезом. Токарка — тело вращения (X — диаметр, Z — ось), Matsuura — карта высот. В приложении 3D рисует Tuner — здесь важны поведение и управление.</p>' +
       '<h3>Демо-состояние текущей вкладки</h3>' +

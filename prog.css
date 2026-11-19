@@ -117,3 +117,30 @@
 /* ===== Foot: acting on the text ===== */
 .pg-foot .tk-b,.pg-tools .tk-b{background:transparent;}
 .pg-foot .tk-b:active,.pg-tools .tk-b:active{background:var(--ec-fg-12);}
+
+/* ===== The variant from Tuner's components (spec sect. 4, the draft's left panel) =====
+   Channel 1 | 2 · Split — Operations | Axes (Axes — block 8) — the operations as Tuner's setup tree, a
+   list of 48 rows, 6 in sight: the operation's colour (a straight edge), Tuner's status, the name, the
+   tool; the selected one lit. An error status opens Tuner's operation status panel (a 44 target around
+   the icon). Then the program's file ▾ · Open program · Follow (Tuner's toggle), the text with Tuner's
+   marks (an operation starts at its flag, a hairline above), Page up · Page down · Find · Edit, captioned */
+.pg-one{padding:0 calc(6px * var(--ki));color:var(--ec-fg-64);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+.pg-olh{flex:0 0 auto;display:flex;align-items:flex-end;gap:calc(22px * var(--kf));height:calc(38px * var(--kf));padding:0 var(--pg-m) 0 calc(16px * var(--ki));
+  border-bottom:1px solid var(--ec-fg-8);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);}
+.pg-olh span{padding-bottom:calc(8px * var(--kf));color:var(--ec-fg-32);}
+.pg-olh .cur{color:var(--ec-fg-96);box-shadow:inset 0 -2px 0 var(--ec-fg-80);}
+.pg-ol{flex:0 0 auto;max-height:calc(48px * var(--kf) * 6);overflow-y:auto;overflow-x:hidden;scrollbar-width:none;overscroll-behavior:contain;
+  border-bottom:1px solid var(--ec-fg-12);}
+.pg-ol::-webkit-scrollbar{display:none;}
+.pg-olr{display:flex;align-items:center;gap:calc(10px * var(--kf));height:max(var(--t-min), calc(48px * var(--kf)));padding-right:var(--pg-m);color:var(--ec-fg-80);cursor:pointer;}
+.pg-olr:active{background:var(--ec-fg-8);}
+.pg-olr.sel{background:var(--ec-fg-12);}
+.pg-olr-c{align-self:stretch;flex:0 0 4px;background:var(--c);margin-right:calc(4px * var(--kf));}
+.pg-olr-s{flex:0 0 auto;width:calc(20px * var(--kf));height:calc(20px * var(--kf));box-sizing:content-box;padding:calc(12px * var(--kf));margin:calc(-12px * var(--kf));}
+.pg-olr b{flex:1 1 auto;min-width:0;font:400 var(--t-fs)/var(--t-lh) var(--ec-font);color:var(--ec-fg-96);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pg-olr > span:not(.pg-olr-c){flex:0 1 auto;min-width:0;color:var(--ec-fg-56);font:400 var(--t-fs-meta)/var(--t-lh-meta) var(--ec-font);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pg-ln.op0{box-shadow:inset 0 1px 0 var(--ec-fg-12);}
+.pg-tools.pg-foot{border-bottom:0;}
+.pg-t .pg-track{top:4px;}
+.tk-menu.pg-opst{min-width:calc(380px * var(--kf));}

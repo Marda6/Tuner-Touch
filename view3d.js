@@ -137,7 +137,7 @@ function init(){
     for (let i = 0; i < n; i++) if (keep(pr.out, i)) add(pr.out[i], S.z0 - i * DZ);
     for (let i = n - 1; i >= 0; i--) if (keep(pr.inn, i)) add(pr.inn[i], S.z0 - i * DZ);
     add(pts[0].x, pts[0].y);
-    const g = sl ? new THREE.LatheGeometry(pts, 54, sl.start, Math.PI * 1.5) : new THREE.LatheGeometry(pts, 72);
+    const g = sl ? new THREE.LatheGeometry(pts, 54, sl.start, sl.len) : new THREE.LatheGeometry(pts, 72);
     g.rotateZ(-Math.PI / 2);
     return g;
   }
@@ -150,16 +150,16 @@ function init(){
     for (let i = 0; i < n; i++) if (keep(pr.out, i)) pts.push(new THREE.Vector2(pr.out[i], S.z0 - i * DZ));
     for (let i = n - 1; i >= 0; i--) if (keep(pr.inn, i)) pts.push(new THREE.Vector2(pr.inn[i], S.z0 - i * DZ));
     const g = new THREE.Group();
-    [sl.start, sl.start + Math.PI * 1.5].forEach(phi => {
+    [sl.start, sl.start + sl.len].forEach(phi => {
       const geo = new THREE.ShapeGeometry(new THREE.Shape(pts));
       geo.rotateY(phi - Math.PI / 2); geo.rotateZ(-Math.PI / 2);
       g.add(new THREE.Mesh(geo, M.cap));
     });
     return g;
   }
-  function sliceFor(v){
+  function sliceFor(v, half){
     const dy = Math.sin(v.pitch), dz = Math.cos(v.pitch) * Math.cos(v.yaw), c = Math.atan2(-dy, dz);
-    return {start:c + Math.PI / 4};
+    return half ? {start:c + Math.PI / 2, len:Math.PI} : {start:c + Math.PI / 4, len:Math.PI * 1.5};
   }
   function latheColors(geo, S, res, part){
     const p = geo.attributes.position, col = new Float32Array(p.count * 3), cc = new THREE.Color();
@@ -301,7 +301,8 @@ function init(){
     });
     if (fp.length){ const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(fp, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(fc, 3)); G.path.add(new THREE.LineSegments(g, M.feed)); }
     if (rp.length){ const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3)); const ls = new THREE.LineSegments(g, M.rapid); ls.computeLineDistances(); G.path.add(ls); }
-    cutTo = null; toolOf = null;
+    cutTo = null; toolOf = null; turnSlice = null;
+    if (typeof renderPlates === 'function') renderPlates();   // the turning keys come and go with the machine
   }
   let slice = null, sliceKey = '';
   function cut(c){
@@ -388,11 +389,14 @@ function init(){
   // Fit: into the free part of the view — left of the visibility column, above the cube and its row
   function fitTo(view, ms){
     const sph = bounds().getBoundingSphere(new THREE.Sphere());
+    // the free part: right of the left column (the variant from Tuner's components), left of the visibility
+    // column, above the cube (the new design)
     const W = host.clientWidth || 1, H = host.clientHeight || 1, rw = right.offsetWidth + 12, bh = cubeEl.offsetHeight * 0.6;
-    const fw = Math.max(80, W - rw - 12), fh = Math.max(80, H - bh), t = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+    const L = left.offsetWidth ? left.offsetWidth + 24 : 12;
+    const fw = Math.max(80, W - rw - L), fh = Math.max(80, H - bh), t = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
     const dist = sph.radius * H / (Math.min(fw, fh) * t) * 1.04;
     const yaw = view && view.yaw != null ? view.yaw : cam.yaw, pitch = view && view.pitch != null ? view.pitch : cam.pitch, per = 2 * dist * t / H;
-    const dx = (12 - rw) / 2, dy = -bh / 2;          // where the free middle is, from the view's centre (px, y down)
+    const dx = (L - rw) / 2, dy = -bh / 2;          // where the free middle is, from the view's centre (px, y down)
     const rx = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
     const up = new THREE.Vector3(-Math.sin(pitch) * Math.sin(yaw), Math.cos(pitch), -Math.sin(pitch) * Math.cos(yaw));
     const target = sph.center.clone().addScaledVector(rx, -dx * per).addScaledVector(up, dy * per);
@@ -458,8 +462,11 @@ function init(){
     tipTo.copy(tip);
     const err = TT.calculated(p) && TT.found(c)[cur];
     ring.visible = !!err;
-    // an error inside the bore: a quarter of the result cut away on the camera's side while the machine stands there
-    const want = err && innerAt(c, cur) ? sliceFor(FLY.inner) : null, wk = want ? want.start.toFixed(3) : '';
+    // the new design: an error inside the bore — a quarter of the result cut away on the camera's side while
+    // the machine stands there. The variant from Tuner's components: Tuner's rotational body mode instead
+    // (3D / ¾ / ½), set by hand, cut on the camera's side at the moment it is chosen
+    const want = TT.isTuner() ? (!mill && turn !== '3d' ? (turnSlice || (turnSlice = sliceFor({yaw:cam.yaw, pitch:cam.pitch}, turn === 'h'))) : null) : (err && innerAt(c, cur) ? sliceFor(FLY.inner) : null);
+    const wk = want ? want.start.toFixed(3) + ':' + want.len.toFixed(3) : '';
     if (wk !== sliceKey){ slice = want; sliceKey = wk; if (res) resMesh(); }
     if (err && cur !== lastCur) flyToError(tip);
     lastCur = cur;
@@ -488,10 +495,30 @@ function init(){
   // a square key, the icon alone (Ruslan: narrower plates); its name for the reader and the desk's hover,
   // the long-press tip — block 8
   const Q = (attrs, icon, label, cls) => '<button class="v3-k sq' + (cls ? ' ' + cls : '') + '" ' + attrs + ' aria-label="' + esc(label) + '" title="' + esc(label) + '">' + icon + '</button>';
-  let finger = TT.load('touch.finger', 'rotate');
-  const tools = document.createElement('div'), right = document.createElement('div'), keyEl = document.createElement('div'), cubeEl = document.createElement('div');
-  tools.className = 'v3-p v3-tools'; right.className = 'v3-p v3-r'; keyEl.className = 'v3-key'; cubeEl.className = 'v3-cube';
-  root.appendChild(cubeEl); root.appendChild(tools); root.appendChild(right); root.appendChild(keyEl);
+  // a key with its caption under the icon (the variant from Tuner's components: the spec's view keys, captioned)
+  const K = (attrs, icon, label, cls) => '<button class="v3-k cap' + (cls ? ' ' + cls : '') + '" ' + attrs + '>' + icon + '<span>' + esc(label) + '</span></button>';
+  // a view's icon — a cube with the face it looks at filled
+  function cube(face){
+    const top = 'M12 3.5 19.5 7.5 12 11.5 4.5 7.5Z', lf = 'M4.5 7.5 12 11.5V20.5L4.5 16.5Z', rt = 'M19.5 7.5 12 11.5V20.5L19.5 16.5Z';
+    const f = d => '<path d="' + d + '" fill="currentColor" fill-opacity=".45" stroke="none"/>';
+    return (face === 'iso' ? f(top) + f(lf) + f(rt) : face === 'top' ? f(top) : face === 'front' ? f(lf) : f(rt)) +
+      '<path d="' + top + '"/><path d="M4.5 7.5V16.5L12 20.5 19.5 16.5V7.5M12 11.5V20.5"/>';
+  }
+  // Tuner's rotational body modes (the view control toolbar): 3D — whole; ¾ — a quarter away; ½ — a half away
+  const TURN_IC = {'3d':'<circle cx="12" cy="12" r="7.5"/>', q:'<path d="M12 12V4.5A7.5 7.5 0 1 0 19.5 12Z"/>', h:'<path d="M12 4.5v15A7.5 7.5 0 0 1 12 4.5Z"/>'};
+  let finger = TT.load('touch.finger', 'rotate'), turn = TT.load('touch.v2.turn', '3d'), turnSlice = null;
+  const tools = document.createElement('div'), right = document.createElement('div'), keyEl = document.createElement('div'), cubeEl = document.createElement('div'), left = document.createElement('div');
+  tools.className = 'v3-p v3-tools'; right.className = 'v3-p v3-r'; keyEl.className = 'v3-key'; cubeEl.className = 'v3-cube'; left.className = 'v3-p v3-l';
+  root.appendChild(cubeEl); root.appendChild(tools); root.appendChild(left); root.appendChild(right); root.appendChild(keyEl);
+  function setTurn(k){ turn = k; TT.keep('touch.v2.turn', k); turnSlice = k === '3d' ? null : sliceFor({yaw:cam.yaw, pitch:cam.pitch}, k === 'h'); renderPlates(); sync(); }
+  left.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.mode){ finger = b.dataset.mode; TT.keep('touch.finger', finger); renderPlates(); }
+    else if (b.dataset.view) fitTo(VIEWS[b.dataset.view]);
+    else if (b.dataset.v === 'fit') fitTo();
+    else if (b.dataset.v === 'views') ui.menu(b, ['iso', 'top', 'front', 'right'].map(v => ({key:v, icon:svg(cube(v)), label:t('v_' + v)}))).then(k => { if (k) fitTo(VIEWS[k]); });
+    else if (b.dataset.v === 'turn') ui.menu(b, [['3d', '3D'], ['q', '¾'], ['h', '½']].map(x => ({key:x[0], icon:svg(TURN_IC[x[0]]), label:x[1] + ' · ' + t('v_turn_' + x[0])}))).then(k => { if (k) setTurn(k); });
+  });
 
   // ——— the view cube, bottom left (as ENCY's): a tap on a face — the view from that side, a drag — orbit;
   // Home — Iso, fitted; ↺ ↻ — a quarter turn. Drawn from the camera itself, so it always agrees with the scene.
@@ -550,6 +577,15 @@ function init(){
   });
 
   function renderPlates(){
+    // the variant from Tuner's components (spec sect. 3): on the 3D's left — the finger's mode (Rotate ·
+    // Pan · Zoom) | Fit | Iso · Top · Front · Right, every key captioned; turning — Tuner's rotational
+    // body mode (3D / ¾ / ½) after them
+    left.innerHTML = '<div class="v3-g" role="radiogroup">' + ['rotate', 'pan', 'zoom'].map(m =>
+        K('data-mode="' + m + '" role="radio" aria-checked="' + (finger === m) + '"', svg(IC[m]), t('v_' + m), finger === m ? 'cur' : '')).join('') + '</div>' +
+      '<span class="v3-div"></span>' + K('data-v="fit"', svg(IC.fit), t('v_fit')) + '<span class="v3-div"></span>' +
+      '<div class="v3-g v3-views">' + ['iso', 'top', 'front', 'right'].map(v => K('data-view="' + v + '"', svg(cube(v)), t('v_' + v))).join('') + '</div>' +
+      K('data-v="views" aria-haspopup="menu"', svg(cube('iso')), t('v_views'), 'more') +
+      (mill ? '' : '<span class="v3-div"></span>' + K('data-v="turn" aria-haspopup="menu"', svg(TURN_IC[turn]), t('v_turn') + ' ' + ({'3d':'3D', q:'¾', h:'½'})[turn], turn !== '3d' ? 'cur' : ''));
     tools.innerHTML = Q('data-v="fit"', svg(IC.fit), t('v_fit')) + '<span class="v3-div"></span>' +
       '<div class="v3-g" role="radiogroup">' + ['rotate', 'pan', 'zoom'].map(m =>
         Q('data-mode="' + m + '" role="radio" aria-checked="' + (finger === m) + '"', svg(IC[m]), t('v_' + m), finger === m ? 'cur' : '')).join('') + '</div>';
@@ -578,6 +614,7 @@ function init(){
       if (rowEnd + 8 > W - m - kw){ keyEl.classList.add('up'); low = cubeEl.offsetHeight + 8 + kh + 8; } else low = kh + 8;
     }
     if (right.offsetHeight > H - 2 * m - low) right.classList.add('c');
+    left.classList.remove('c'); if (TT.isTuner() && left.offsetHeight > H - 2 * m) left.classList.add('c');   // the views fold into "View"
   }
   tools.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
@@ -648,6 +685,7 @@ function init(){
 
   TT.on('projects', sync); TT.on('active', sync);
   TT.on('lang', renderPlates);
+  TT.on('variant', () => { renderPlates(); resize(); sync(); });
   TT.on('resize', resize);
   renderPlates(); resize(); sync();
   // for the stand and its checks: the view, the camera, the visibility, and how the result is coloured
